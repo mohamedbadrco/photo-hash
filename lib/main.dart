@@ -121,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   color: Colors.blueGrey),
               width: double.infinity,
-              height: 200.0,
+              height: 350.0,
               child: image == null
                   ? MaterialButton(
                       height: 30.0,
@@ -133,10 +133,27 @@ class _MyHomePageState extends State<MyHomePage> {
                       onPressed: () {
                         pickImage();
                       })
-                  : Container(
-                      child: kIsWeb
-                          ? Image.network(image!.path)
-                          : Image.file(File(image!.path)),
+                  : Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(top: 20),
+                          child: kIsWeb
+                              ? Image.network(
+                                  image!.path,
+                                )
+                              : Image.file(File(image!.path)),
+                        ),
+                        MaterialButton(
+                            height: 30.0,
+                            color: Colors.blue,
+                            child: const Text("Pick Image from Gallery",
+                                style: TextStyle(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.bold)),
+                            onPressed: () {
+                              pickImage();
+                            })
+                      ],
                     ),
             )
           ],
