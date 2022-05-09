@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:typed_data';
+
+import 'package:image/image.dart' as img;
+import 'package:universal_io/io.dart' as universal;
+import 'package:flutter/rendering.dart';
 
 void main() {
   runApp(const MyApp());
@@ -53,16 +59,48 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   XFile? image;
+  img.Image? photo;
 
   Future pickImage() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-      print(image);
       if (image == null) return;
       setState(() => this.image = image);
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
     }
+    final Uint8List bytes = await image!.readAsBytes();
+    photo = img.decodeImage(bytes);
+  }
+
+  Future converthash() async {
+    List<int> photodata = photo!.data;
+    int leng = photodata.length;
+
+    int height = photo!.height;
+    int width = photo!.width;
+
+    img.Image image = img.Image(width, height);
+
+    img.fill(image, img.getColor(255, 255, 255));
+
+    int index_x = 0;
+    for (int i = 0; i < height; i++) {
+      int index_y = 0;
+      for (int j = 0; j < width; j++) {
+        int blue = (photodata[i * height + j] >> 16) & 0xff;
+        int red = photodata[i * height + j] & 0xff;
+        int green = (photodata[i * height + j] >> 8) & 0xff;
+        int alpha = (photodata[i * height + j] >> 24) & 0xff;
+        double avg = (blue + red + green + alpha) / 4;
+
+        img.drawChar(image, img.arial_14, index_x, index_y, 'H');
+        index_y += 8;
+      }
+      index_x += 8;
+    }
+
+    File('test.png').writeAsBytesSync(img.encodePng(image));
   }
 
   @override
@@ -140,8 +178,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: kIsWeb
                               ? Image.network(
                                   image!.path,
+                                  height: 200.0,
+                                  width: 200,
                                 )
-                              : Image.file(File(image!.path)),
+                              : Image.file(
+                                  File(image!.path),
+                                  height: 200.0,
+                                  width: 200,
+                                ),
                         ),
                         MaterialButton(
                             height: 30.0,
@@ -152,10 +196,19 @@ class _MyHomePageState extends State<MyHomePage> {
                                     fontWeight: FontWeight.bold)),
                             onPressed: () {
                               pickImage();
-                            })
+                            }),
                       ],
                     ),
-            )
+            ),
+            MaterialButton(
+                height: 50.0,
+                color: Colors.blue,
+                child: const Text("Convert",
+                    style: TextStyle(
+                        color: Colors.white70, fontWeight: FontWeight.bold)),
+                onPressed: () {
+                  converthash();
+                })
           ],
         ),
       ),
