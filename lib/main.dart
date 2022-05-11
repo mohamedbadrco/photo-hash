@@ -1,15 +1,17 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:syncfusion_flutter_sliders/sliders.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
+//import 'package:flutter/services.dart';
+//import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
-import 'package:universal_io/io.dart' as universal;
-import 'package:flutter/rendering.dart';
 
 void main() {
   runApp(const MyApp());
@@ -60,6 +62,15 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   XFile? image;
   img.Image? photo;
+  Uint8List? imagebytes;
+  String gscale1 =
+      "\$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'.";
+
+  String gscale2 = '@%#*+=-:. ';
+
+  double _valuecom = 0.5;
+
+  double _valueblur = 0.0;
 
   Future pickImage() async {
     try {
@@ -69,38 +80,45 @@ class _MyHomePageState extends State<MyHomePage> {
     } on PlatformException catch (e) {
       print('Failed to pick image: $e');
     }
-    final Uint8List bytes = await image!.readAsBytes();
-    photo = img.decodeImage(bytes);
+    imagebytes = await image!.readAsBytes();
+    setState(() => {});
   }
 
   Future converthash() async {
+    photo = img.decodeImage(imagebytes!);
+
     List<int> photodata = photo!.data;
-    int leng = photodata.length;
 
     int height = photo!.height;
+
     int width = photo!.width;
 
-    img.Image image = img.Image(width, height);
+    img.Image imageg = img.Image(width * 14, height * 14);
 
-    img.fill(image, img.getColor(255, 255, 255));
+    img.fill(imageg, img.getColor(255, 255, 255));
 
-    int index_x = 0;
     for (int i = 0; i < height; i++) {
-      int index_y = 0;
       for (int j = 0; j < width; j++) {
-        int blue = (photodata[i * height + j] >> 16) & 0xff;
-        int red = photodata[i * height + j] & 0xff;
-        int green = (photodata[i * height + j] >> 8) & 0xff;
-        int alpha = (photodata[i * height + j] >> 24) & 0xff;
+        //get pixle colors
+
+        int red = photodata[i * width + j] & 0xff;
+        int green = (photodata[i * width + j] >> 8) & 0xff;
+        int blue = (photodata[i * width + j] >> 16) & 0xff;
+        int alpha = (photodata[i * width + j] >> 24) & 0xff;
+
+        //cal avg
         double avg = (blue + red + green + alpha) / 4;
 
-        img.drawChar(image, img.arial_14, index_x, index_y, 'H');
-        index_y += 8;
+        var k = gscale2[((avg * 9) / 255).round()];
+
+        img.drawChar(imageg, img.arial_14, j * 14, i * 14, k,
+            color: 0Xff000000);
       }
-      index_x += 8;
     }
 
-    File('test.png').writeAsBytesSync(img.encodePng(image));
+    imagebytes = Uint8List.fromList(img.encodePng(imageg));
+    setState(() => {});
+    print('done');
   }
 
   @override
@@ -153,14 +171,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 )),
             Container(
-              alignment: Alignment.center,
-              margin: const EdgeInsets.all(10.0),
-              decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  color: Colors.blueGrey),
               width: double.infinity,
-              height: 350.0,
-              child: image == null
+              child: imagebytes == null
                   ? MaterialButton(
                       height: 30.0,
                       color: Colors.blue,
@@ -171,44 +183,106 @@ class _MyHomePageState extends State<MyHomePage> {
                       onPressed: () {
                         pickImage();
                       })
-                  : Column(
+                  : Stack(
+                      alignment: AlignmentDirectional.bottomCenter,
                       children: [
                         Container(
-                          margin: const EdgeInsets.only(top: 20),
-                          child: kIsWeb
-                              ? Image.network(
-                                  image!.path,
-                                  height: 200.0,
-                                  width: 200,
-                                )
-                              : Image.file(
-                                  File(image!.path),
-                                  height: 200.0,
-                                  width: 200,
+                            width: MediaQuery.of(context).size.width,
+                            child: Image.memory(
+                              imagebytes!,
+                              width: MediaQuery.of(context).size.width,
+                              alignment: Alignment.center,
+                            )),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.all(10.0),
+                              child: ClipRect(
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(
+                                      sigmaX: 10.0, sigmaY: 10.0),
+                                  child: Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(25)),
+                                          color: Colors.black.withOpacity(0.5)),
+                                      child: Column(
+                                        children: [
+                                          MaterialButton(
+                                              height: 30.0,
+                                              color: Colors.blue,
+                                              child: const Text("Chang Image ",
+                                                  style: TextStyle(
+                                                      color: Colors.white70,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              onPressed: () {
+                                                pickImage();
+                                              }),
+                                          SfSlider(
+                                            min: 0.1,
+                                            max: 1.0,
+                                            value: _valuecom,
+                                            showTicks: true,
+                                            showLabels: true,
+                                            enableTooltip: true,
+                                            minorTicksPerInterval: 1,
+                                            onChanged: (dynamic value) {
+                                              setState(() {
+                                                _valuecom = value;
+                                              });
+                                            },
+                                          ),
+                                          SfSlider(
+                                            min: 0.0,
+                                            max: 10.0,
+                                            value: _valueblur,
+                                            interval: 1.0,
+                                            showTicks: true,
+                                            showLabels: true,
+                                            enableTooltip: true,
+                                            minorTicksPerInterval: 1,
+                                            onChanged: (dynamic value) {
+                                              setState(() {
+                                                _valueblur = value;
+                                              });
+                                            },
+                                          ),
+                                          MultiSelectChipDisplay(
+                                            items: _filtersnames
+                                                .map((e) =>
+                                                    MultiSelectItem(e, e))
+                                                .toList(),
+                                            onTap: (value) {
+                                              setState(() {
+                                                _selectedAnimals.remove(value);
+                                              });
+                                            },
+                                          ),
+                                          MaterialButton(
+                                              height: 50.0,
+                                              color: Colors.blue,
+                                              child: const Text("Convert",
+                                                  style: TextStyle(
+                                                      color: Colors.white70,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              onPressed: () {
+                                                converthash();
+                                              }),
+                                        ],
+                                      )),
                                 ),
+                              ),
+                            ),
+                          ],
                         ),
-                        MaterialButton(
-                            height: 30.0,
-                            color: Colors.blue,
-                            child: const Text("Pick Image from Gallery",
-                                style: TextStyle(
-                                    color: Colors.white70,
-                                    fontWeight: FontWeight.bold)),
-                            onPressed: () {
-                              pickImage();
-                            }),
                       ],
                     ),
             ),
-            MaterialButton(
-                height: 50.0,
-                color: Colors.blue,
-                child: const Text("Convert",
-                    style: TextStyle(
-                        color: Colors.white70, fontWeight: FontWeight.bold)),
-                onPressed: () {
-                  converthash();
-                })
           ],
         ),
       ),
