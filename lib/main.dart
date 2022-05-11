@@ -72,6 +72,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   double _valueblur = 0.0;
 
+  final List<String> _filtersnames = ['Normal Colors', 'Sepia', 'GreyScale'];
+
+  String? _Flitername = 'GreyScale';
+
   Future pickImage() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -171,117 +175,104 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 )),
             Container(
-              width: double.infinity,
-              child: imagebytes == null
-                  ? MaterialButton(
-                      height: 30.0,
-                      color: Colors.blue,
-                      child: const Text("Pick Image from Gallery",
-                          style: TextStyle(
-                              color: Colors.white70,
-                              fontWeight: FontWeight.bold)),
-                      onPressed: () {
-                        pickImage();
-                      })
-                  : Stack(
-                      alignment: AlignmentDirectional.bottomCenter,
-                      children: [
-                        Container(
-                            width: MediaQuery.of(context).size.width,
-                            child: Image.memory(
-                              imagebytes!,
-                              width: MediaQuery.of(context).size.width,
-                              alignment: Alignment.center,
-                            )),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.all(10.0),
-                              child: ClipRect(
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                      sigmaX: 10.0, sigmaY: 10.0),
-                                  child: Container(
-                                      width: MediaQuery.of(context).size.width,
-                                      decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(25)),
-                                          color: Colors.black.withOpacity(0.5)),
-                                      child: Column(
-                                        children: [
-                                          MaterialButton(
-                                              height: 30.0,
-                                              color: Colors.blue,
-                                              child: const Text("Chang Image ",
-                                                  style: TextStyle(
-                                                      color: Colors.white70,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              onPressed: () {
-                                                pickImage();
-                                              }),
-                                          SfSlider(
-                                            min: 0.1,
-                                            max: 1.0,
-                                            value: _valuecom,
-                                            showTicks: true,
-                                            showLabels: true,
-                                            enableTooltip: true,
-                                            minorTicksPerInterval: 1,
-                                            onChanged: (dynamic value) {
-                                              setState(() {
-                                                _valuecom = value;
-                                              });
-                                            },
-                                          ),
-                                          SfSlider(
-                                            min: 0.0,
-                                            max: 10.0,
-                                            value: _valueblur,
-                                            interval: 1.0,
-                                            showTicks: true,
-                                            showLabels: true,
-                                            enableTooltip: true,
-                                            minorTicksPerInterval: 1,
-                                            onChanged: (dynamic value) {
-                                              setState(() {
-                                                _valueblur = value;
-                                              });
-                                            },
-                                          ),
-                                          MultiSelectChipDisplay(
-                                            items: _filtersnames
-                                                .map((e) =>
-                                                    MultiSelectItem(e, e))
-                                                .toList(),
-                                            onTap: (value) {
-                                              setState(() {
-                                                _selectedAnimals.remove(value);
-                                              });
-                                            },
-                                          ),
-                                          MaterialButton(
-                                              height: 50.0,
-                                              color: Colors.blue,
-                                              child: const Text("Convert",
-                                                  style: TextStyle(
-                                                      color: Colors.white70,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              onPressed: () {
-                                                converthash();
-                                              }),
-                                        ],
-                                      )),
-                                ),
+              margin: const EdgeInsets.all(10.0),
+              child: ClipRect(
+                child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(25)),
+                          color: Colors.black.withOpacity(0.5)),
+                      child: Container(
+                        width: double.infinity,
+                        child: imagebytes == null
+                            ? Center(
+                              child: MaterialButton(
+                                  height: 30.0,
+                                  color: Colors.blue,
+                                  child: const Text("Pick Image from Gallery",
+                                      style: TextStyle(
+                                          color: Colors.white70,
+                                          fontWeight: FontWeight.bold)),
+                                  onPressed: () {
+                                    pickImage();
+                                  }),
+                            )
+                            : Stack(
+                                alignment: AlignmentDirectional.bottomCenter,
+                                children: [
+                                  Container(
+                                    width: MediaQuery.of(context).size.width,
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Image.memory(
+                                        imagebytes!,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        alignment: Alignment.center,
+                                      ),
+                                      MaterialButton(
+                                          height: 30.0,
+                                          color: Colors.blue,
+                                          child: const Text("Chang Image ",
+                                              style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontWeight: FontWeight.bold)),
+                                          onPressed: () {
+                                            pickImage();
+                                          }),
+                                      SfSlider(
+                                        min: 0.1,
+                                        max: 1.0,
+                                        value: _valuecom,
+                                        showTicks: true,
+                                        showLabels: true,
+                                        enableTooltip: true,
+                                        minorTicksPerInterval: 1,
+                                        onChanged: (dynamic value) {
+                                          setState(() {
+                                            _valuecom = value;
+                                          });
+                                        },
+                                      ),
+                                      SfSlider(
+                                        min: 0.0,
+                                        max: 10.0,
+                                        value: _valueblur,
+                                        interval: 1.0,
+                                        showTicks: true,
+                                        showLabels: true,
+                                        enableTooltip: true,
+                                        minorTicksPerInterval: 1,
+                                        onChanged: (dynamic value) {
+                                          setState(() {
+                                            _valueblur = value;
+                                          });
+                                        },
+                                      ),
+                                      MaterialButton(
+                                          height: 50.0,
+                                          color: Colors.blue,
+                                          child: const Text("Convert",
+                                              style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontWeight: FontWeight.bold)),
+                                          onPressed: () {
+                                            converthash();
+                                          }),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    )),
+              ),
             ),
           ],
         ),
