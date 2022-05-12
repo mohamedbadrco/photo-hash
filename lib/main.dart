@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
+//import 'package:multi_select_flutter/multi_select_flutter.dart';
 //import 'package:flutter/services.dart';
 //import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
@@ -61,20 +61,45 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   XFile? image;
+
   img.Image? photo;
   Uint8List? imagebytes;
-  String gscale1 =
-      "\$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'.";
+  final String gscale1 =
+      "\$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'.";
 
-  String gscale2 = '@%#*+=-:. ';
+  final String gscale2 = '@%#*+=-:. ';
+  final String gscale3 = "BWMoahkbdpqwmZOQLCJUYXzcvunxrjftilI";
 
   double _valuecom = 0.5;
 
   double _valueblur = 0.0;
 
-  final List<String> _filtersnames = ['Normal Colors', 'Sepia', 'GreyScale'];
+  Map<String, bool> filtersmap = {
+    'gscale': true,
+    'norcolors': false,
+    'sepia': false
+  };
 
-  String? _Flitername = 'GreyScale';
+  Map<String, bool> typemap = {
+    'img': true,
+    'text': false,
+  };
+
+  Map<String, bool> brcmap = {
+    'white': true,
+    'black': false,
+    'red': false,
+    'green': false,
+    'blue': false
+  };
+
+  Map<String, bool> fontmap = {'14': true, '24': false};
+
+  Map<String, bool> symbollsmap = {
+    'letters and symbols': true,
+    'onlysymbols': false,
+    'onlyletters': false
+  };
 
   Future pickImage() async {
     try {
@@ -135,146 +160,199 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       backgroundColor: const Color(0xffdbe9f4),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          children: <Widget>[
-            Container(
-                alignment: Alignment.center,
-                margin: const EdgeInsets.all(2.0),
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(5)),
-                    color: Colors.blueGrey),
-                height: 70.0,
-                child: Row(
-                  children: const [
-                    Text(
-                      "#PHOTO HASH",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          letterSpacing: 2,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                )),
-            Container(
-              margin: const EdgeInsets.all(10.0),
-              child: ClipRect(
-                child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(25)),
-                          color: Colors.black.withOpacity(0.5)),
-                      child: Container(
-                        width: double.infinity,
-                        child: imagebytes == null
-                            ? Center(
-                              child: MaterialButton(
-                                  height: 30.0,
-                                  color: Colors.blue,
-                                  child: const Text("Pick Image from Gallery",
-                                      style: TextStyle(
-                                          color: Colors.white70,
-                                          fontWeight: FontWeight.bold)),
-                                  onPressed: () {
-                                    pickImage();
-                                  }),
-                            )
-                            : Stack(
-                                alignment: AlignmentDirectional.bottomCenter,
-                                children: [
-                                  Container(
-                                    width: MediaQuery.of(context).size.width,
-                                  ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Image.memory(
-                                        imagebytes!,
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        alignment: Alignment.center,
-                                      ),
-                                      MaterialButton(
-                                          height: 30.0,
-                                          color: Colors.blue,
-                                          child: const Text("Chang Image ",
-                                              style: TextStyle(
-                                                  color: Colors.white70,
-                                                  fontWeight: FontWeight.bold)),
-                                          onPressed: () {
-                                            pickImage();
-                                          }),
-                                      SfSlider(
-                                        min: 0.1,
-                                        max: 1.0,
-                                        value: _valuecom,
-                                        showTicks: true,
-                                        showLabels: true,
-                                        enableTooltip: true,
-                                        minorTicksPerInterval: 1,
-                                        onChanged: (dynamic value) {
-                                          setState(() {
-                                            _valuecom = value;
-                                          });
-                                        },
-                                      ),
-                                      SfSlider(
-                                        min: 0.0,
-                                        max: 10.0,
-                                        value: _valueblur,
-                                        interval: 1.0,
-                                        showTicks: true,
-                                        showLabels: true,
-                                        enableTooltip: true,
-                                        minorTicksPerInterval: 1,
-                                        onChanged: (dynamic value) {
-                                          setState(() {
-                                            _valueblur = value;
-                                          });
-                                        },
-                                      ),
-                                      MaterialButton(
-                                          height: 50.0,
-                                          color: Colors.blue,
-                                          child: const Text("Convert",
-                                              style: TextStyle(
-                                                  color: Colors.white70,
-                                                  fontWeight: FontWeight.bold)),
-                                          onPressed: () {
-                                            converthash();
-                                          }),
-                                    ],
-                                  ),
-                                ],
-                              ),
+      body: SingleChildScrollView(
+        child: Center(
+          // Center is a layout widget. It takes a single child and positions it
+          // in the middle of the parent.
+          child: Column(
+            // Column is also a layout widget. It takes a list of children and
+            // arranges them vertically. By default, it sizes itself to fit its
+            // children horizontally, and tries to be as tall as its parent.
+            //
+            // Invoke "debug painting" (press "p" in the console, choose the
+            // "Toggle Debug Paint" action from the Flutter Inspector in Android
+            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+            // to see the wireframe for each widget.
+            //
+            // Column has various properties to control how it sizes itself and
+            // how it positions its children. Here we use mainAxisAlignment to
+            // center the children vertically; the main axis here is the vertical
+            // axis because Columns are vertical (the cross axis would be
+            // horizontal).
+            children: <Widget>[
+              Container(
+                  alignment: Alignment.center,
+                  margin: const EdgeInsets.all(2.0),
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      color: Colors.blueGrey),
+                  height: 70.0,
+                  child: Row(
+                    children: const [
+                      Text(
+                        "#PHOTO HASH",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            letterSpacing: 2,
+                            fontWeight: FontWeight.bold),
                       ),
-                    )),
+                    ],
+                  )),
+              Container(
+                margin: const EdgeInsets.all(10.0),
+                child: ClipRect(
+                  child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(25)),
+                            color: Colors.black.withOpacity(0.5)),
+                        child: Container(
+                          width: double.infinity,
+                          height: MediaQuery.of(context).size.height,
+                          child: imagebytes == null
+                              ? Center(
+                                  child: MaterialButton(
+                                      height: 30.0,
+                                      color: Colors.blue,
+                                      child: const Text(
+                                          "Pick Image from Gallery",
+                                          style: TextStyle(
+                                              color: Colors.white70,
+                                              fontWeight: FontWeight.bold)),
+                                      onPressed: () {
+                                        pickImage();
+                                      }),
+                                )
+                              : Stack(
+                                  alignment: AlignmentDirectional.bottomCenter,
+                                  children: [
+                                    Container(
+                                      width: MediaQuery.of(context).size.width,
+                                    ),
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Image.memory(
+                                          imagebytes!,
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          alignment: Alignment.center,
+                                        ),
+                                        MaterialButton(
+                                            height: 30.0,
+                                            color: Colors.blue,
+                                            child: const Text("Chang Image ",
+                                                style: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                            onPressed: () {
+                                              pickImage();
+                                            }),
+                                        Column(
+                                          children: [
+                                            SfSlider(
+                                              min: 0.1,
+                                              max: 1.0,
+                                              value: _valuecom,
+                                              showTicks: true,
+                                              showLabels: true,
+                                              enableTooltip: true,
+                                              minorTicksPerInterval: 1,
+                                              onChanged: (dynamic value) {
+                                                setState(() {
+                                                  _valuecom = value;
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            SfSlider(
+                                              min: 0.0,
+                                              max: 10.0,
+                                              value: _valueblur,
+                                              interval: 1.0,
+                                              showTicks: true,
+                                              showLabels: true,
+                                              enableTooltip: true,
+                                              minorTicksPerInterval: 1,
+                                              onChanged: (dynamic value) {
+                                                setState(() {
+                                                  _valueblur = value;
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                ChoiceChip(
+                                                  label:
+                                                      const Text('Grey Scale'),
+                                                  selected:
+                                                      filtersmap['gscale']!,
+                                                  onSelected: (bool selected) {
+                                                    filtersmap.forEach((k, v) =>
+                                                        print(
+                                                            "Key : $k, Value : $v"));
+                                                  },
+                                                ),
+                                                ChoiceChip(
+                                                  label: const Text(
+                                                      'Normal colors'),
+                                                  selected:
+                                                      filtersmap['norcolors']!,
+                                                  onSelected: (bool selected) {
+                                                    filtersmap.forEach((k, v) =>
+                                                        print(
+                                                            "Key : $k, Value : $v"));
+                                                  },
+                                                ),
+                                                ChoiceChip(
+                                                  label: const Text('sepia'),
+                                                  selected:
+                                                      filtersmap['sepia']!,
+                                                  onSelected: (bool selected) {
+                                                    filtersmap.forEach((k, v) =>
+                                                        print(
+                                                            "Key : $k, Value : $v"));
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        MaterialButton(
+                                            height: 50.0,
+                                            color: Colors.blue,
+                                            child: const Text("Convert",
+                                                style: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                            onPressed: () {
+                                              converthash();
+                                            }),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      )),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
