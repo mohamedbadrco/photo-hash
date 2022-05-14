@@ -68,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
       "\$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'.";
 
   final String gscale2 = '@%#*+=-:. ';
+  
   final String gscale3 = "BWMoahkbdpqwmZOQLCJUYXzcvunxrjftilI";
 
   double _valuecom = 0.5;
@@ -75,13 +76,14 @@ class _MyHomePageState extends State<MyHomePage> {
   double _valueblur = 0.0;
 
   Map<String, bool> filtersmap = {
-    'gscale': true,
-    'norcolors': false,
-    'sepia': false
+    'Grey scale': true,
+    'Normal colors': false,
+    'sepia': false,
+    'green text': false
   };
 
   Map<String, bool> typemap = {
-    'img': true,
+    'image': true,
     'text': false,
   };
 
@@ -93,12 +95,12 @@ class _MyHomePageState extends State<MyHomePage> {
     'blue': false
   };
 
-  Map<String, bool> fontmap = {'14': true, '24': false};
+  Map<String, bool> fontmap = {'14 px': true, '24 px': false};
 
-  Map<String, bool> symbollsmap = {
+  Map<String, bool> symbolsmap = {
     'letters and symbols': true,
-    'onlysymbols': false,
-    'onlyletters': false
+    'only symbols': false,
+    'only letters': false
   };
 
   Future pickImage() async {
@@ -114,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future converthash() async {
+    
     photo = img.decodeImage(imagebytes!);
 
     List<int> photodata = photo!.data;
@@ -122,9 +125,62 @@ class _MyHomePageState extends State<MyHomePage> {
 
     int width = photo!.width;
 
-    img.Image imageg = img.Image(width * 14, height * 14);
+    print(height);
+    print(width);
 
-    img.fill(imageg, img.getColor(255, 255, 255));
+    photo = img.copyResize(photo!, width: (width * _valuecom).round());
+
+    height = photo!.height;
+
+    width = photo!.width;
+
+    print(height);
+    print(width);
+
+    img.gaussianBlur(photo!, _valueblur.round());
+
+    var fillcolor = img.getColor(255, 255, 255);
+
+    if (brcmap['black'] == true) {
+      fillcolor = img.getColor(0, 0, 0);
+    } else if (brcmap['red'] == true) {
+      fillcolor = img.getColor(255, 0, 0);
+    } else if (brcmap['green'] == true) {
+      fillcolor = img.getColor(0, 255, 0);
+    } else if (brcmap['blue'] == true) {
+      fillcolor = img.getColor(0, 0, 255);
+    }
+
+    var drawfonts = img.arial_14;
+
+    var fontindex = 14;
+
+    if (fontmap['24 px'] == true) {
+      drawfonts = img.arial_24;
+
+      fontindex = 24;
+    }
+
+    String gscale = gscale1;
+
+    int gscalelen = gscale.length - 1 ;
+
+    if (symbolsmap['only symbols'] == true) {
+      gscale = gscale2;
+
+      gscalelen = gscale.length;
+    } else if (symbolsmap['only letters'] == true) {
+      gscale = gscale3;
+
+      gscalelen = gscale.length;
+    }
+
+    img.Image imageg = img.Image(width * fontindex, height * fontindex);
+
+    img.fill(imageg, fillcolor);
+
+    print(gscale);
+    print(gscalelen);
 
     for (int i = 0; i < height; i++) {
       for (int j = 0; j < width; j++) {
@@ -138,9 +194,9 @@ class _MyHomePageState extends State<MyHomePage> {
         //cal avg
         double avg = (blue + red + green + alpha) / 4;
 
-        var k = gscale2[((avg * 9) / 255).round()];
+        var k = gscale[((avg * gscalelen) / 255).round()];
 
-        img.drawChar(imageg, img.arial_14, j * 14, i * 14, k,
+        img.drawChar(imageg, drawfonts, j * fontindex, i * fontindex, k,
             color: 0Xff000000);
       }
     }
@@ -152,6 +208,50 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var typeList = typemap.keys
+        .toList()
+        .map<ChoiceChip>(
+          (s) => ChoiceChip(
+            label: Text(s),
+            selected: typemap[s]!,
+            onSelected: (bool selected) {
+              typemap.forEach((k, v) => typemap[k] = false);
+              typemap[s] = true;
+              setState(() => {});
+            },
+          ),
+        )
+        .toList();
+
+    Map<Map, String> chipname = {
+      filtersmap: 'Hash Filters',
+      brcmap: 'Backround color',
+      fontmap: 'Font size',
+      symbolsmap: 'Symbols'
+    };
+
+    var fliters = [filtersmap, fontmap, brcmap, symbolsmap]
+        .map<Column>((a) => Column(
+              children: [
+                Text(chipname[a]!),
+                Wrap(
+                    children: a.keys
+                        .toList()
+                        .map<ChoiceChip>(
+                          (s) => ChoiceChip(
+                            label: Text(s),
+                            selected: a[s]!,
+                            onSelected: (bool selected) {
+                              a.forEach((k, v) => a[k] = false);
+                              setState(() => {a[s] = true});
+                            },
+                          ),
+                        )
+                        .toList()),
+              ],
+            ))
+        .toList();
+
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -211,142 +311,116 @@ class _MyHomePageState extends State<MyHomePage> {
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(25)),
                             color: Colors.black.withOpacity(0.5)),
-                        child: Container(
+                        child: SizedBox(
                           width: double.infinity,
-                          height: MediaQuery.of(context).size.height,
-                          child: imagebytes == null
-                              ? Center(
-                                  child: MaterialButton(
-                                      height: 30.0,
-                                      color: Colors.blue,
-                                      child: const Text(
-                                          "Pick Image from Gallery",
-                                          style: TextStyle(
-                                              color: Colors.white70,
-                                              fontWeight: FontWeight.bold)),
-                                      onPressed: () {
-                                        pickImage();
-                                      }),
-                                )
-                              : Stack(
-                                  alignment: AlignmentDirectional.bottomCenter,
-                                  children: [
-                                    Container(
-                                      width: MediaQuery.of(context).size.width,
-                                    ),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Image.memory(
-                                          imagebytes!,
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          alignment: Alignment.center,
-                                        ),
-                                        MaterialButton(
-                                            height: 30.0,
-                                            color: Colors.blue,
-                                            child: const Text("Chang Image ",
-                                                style: TextStyle(
-                                                    color: Colors.white70,
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                            onPressed: () {
-                                              pickImage();
-                                            }),
-                                        Column(
-                                          children: [
-                                            SfSlider(
-                                              min: 0.1,
-                                              max: 1.0,
-                                              value: _valuecom,
-                                              showTicks: true,
-                                              showLabels: true,
-                                              enableTooltip: true,
-                                              minorTicksPerInterval: 1,
-                                              onChanged: (dynamic value) {
-                                                setState(() {
-                                                  _valuecom = value;
-                                                });
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                        Column(
-                                          children: [
-                                            SfSlider(
-                                              min: 0.0,
-                                              max: 10.0,
-                                              value: _valueblur,
-                                              interval: 1.0,
-                                              showTicks: true,
-                                              showLabels: true,
-                                              enableTooltip: true,
-                                              minorTicksPerInterval: 1,
-                                              onChanged: (dynamic value) {
-                                                setState(() {
-                                                  _valueblur = value;
-                                                });
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                        Column(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                ChoiceChip(
-                                                  label:
-                                                      const Text('Grey Scale'),
-                                                  selected:
-                                                      filtersmap['gscale']!,
-                                                  onSelected: (bool selected) {
-                                                    filtersmap.forEach((k, v) =>
-                                                        print(
-                                                            "Key : $k, Value : $v"));
-                                                  },
-                                                ),
-                                                ChoiceChip(
-                                                  label: const Text(
-                                                      'Normal colors'),
-                                                  selected:
-                                                      filtersmap['norcolors']!,
-                                                  onSelected: (bool selected) {
-                                                    filtersmap.forEach((k, v) =>
-                                                        print(
-                                                            "Key : $k, Value : $v"));
-                                                  },
-                                                ),
-                                                ChoiceChip(
-                                                  label: const Text('sepia'),
-                                                  selected:
-                                                      filtersmap['sepia']!,
-                                                  onSelected: (bool selected) {
-                                                    filtersmap.forEach((k, v) =>
-                                                        print(
-                                                            "Key : $k, Value : $v"));
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        MaterialButton(
-                                            height: 50.0,
-                                            color: Colors.blue,
-                                            child: const Text("Convert",
-                                                style: TextStyle(
-                                                    color: Colors.white70,
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                            onPressed: () {
-                                              converthash();
-                                            }),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                          child: Expanded(
+                            child: imagebytes == null
+                                ? Center(
+                                    child: MaterialButton(
+                                        height: 30.0,
+                                        color: Colors.blue,
+                                        child: const Text(
+                                            "Pick Image from Gallery",
+                                            style: TextStyle(
+                                                color: Colors.white70,
+                                                fontWeight: FontWeight.bold)),
+                                        onPressed: () {
+                                          pickImage();
+                                        }),
+                                  )
+                                : Stack(
+                                    alignment:
+                                        AlignmentDirectional.bottomCenter,
+                                    children: [
+                                      Container(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                      ),
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Image.memory(
+                                            imagebytes!,
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            alignment: Alignment.center,
+                                          ),
+                                          MaterialButton(
+                                              height: 30.0,
+                                              color: Colors.blue,
+                                              child: const Text("Chang Image ",
+                                                  style: TextStyle(
+                                                      color: Colors.white70,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              onPressed: () {
+                                                pickImage();
+                                              }),
+                                          Column(
+                                            children: [
+                                              Wrap(
+                                                children: typeList,
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              SfSlider(
+                                                min: 0.1,
+                                                max: 1.0,
+                                                value: _valuecom,
+                                                showTicks: true,
+                                                showLabels: true,
+                                                enableTooltip: true,
+                                                minorTicksPerInterval: 1,
+                                                onChanged: (dynamic value) {
+                                                  setState(() {
+                                                    _valuecom = value;
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              SfSlider(
+                                                min: 0.0,
+                                                max: 10.0,
+                                                value: _valueblur,
+                                                interval: 1.0,
+                                                showTicks: true,
+                                                showLabels: true,
+                                                enableTooltip: true,
+                                                minorTicksPerInterval: 1,
+                                                onChanged: (dynamic value) {
+                                                  setState(() {
+                                                    _valueblur = value;
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            children: fliters,
+                                          ),
+                                          MaterialButton(
+                                              height: 50.0,
+                                              color: Colors.blue,
+                                              child: const Text("Convert",
+                                                  style: TextStyle(
+                                                      color: Colors.white70,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              onPressed: () {
+                                                converthash();
+                                              }),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                          ),
                         ),
                       )),
                 ),
