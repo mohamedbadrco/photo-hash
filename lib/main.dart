@@ -65,11 +65,11 @@ class _MyHomePageState extends State<MyHomePage> {
   img.Image? photo;
   Uint8List? imagebytes;
   final String gscale1 =
-      "\$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'.";
+      "\$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
 
   final String gscale2 = '@%#*+=-:. ';
-  
-  final String gscale3 = "BWMoahkbdpqwmZOQLCJUYXzcvunxrjftilI";
+
+  final String gscale3 = "BWMoahkbdpqwmZOQLCJUYXzcvunxrjftilI ";
 
   double _valuecom = 0.5;
 
@@ -116,10 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future converthash() async {
-    
     photo = img.decodeImage(imagebytes!);
-
-    List<int> photodata = photo!.data;
 
     int height = photo!.height;
 
@@ -133,6 +130,8 @@ class _MyHomePageState extends State<MyHomePage> {
     height = photo!.height;
 
     width = photo!.width;
+
+    List<int> photodata = photo!.data;
 
     print(height);
     print(width);
@@ -151,9 +150,9 @@ class _MyHomePageState extends State<MyHomePage> {
       fillcolor = img.getColor(0, 0, 255);
     }
 
-    var drawfonts = img.arial_14;
+    img.BitmapFont drawfonts = img.arial_14;
 
-    var fontindex = 14;
+    int fontindex = 14;
 
     if (fontmap['24 px'] == true) {
       drawfonts = img.arial_24;
@@ -163,41 +162,51 @@ class _MyHomePageState extends State<MyHomePage> {
 
     String gscale = gscale1;
 
-    int gscalelen = gscale.length - 1 ;
+    int gscalelen = gscale.length - 1;
 
     if (symbolsmap['only symbols'] == true) {
       gscale = gscale2;
 
-      gscalelen = gscale.length;
+      gscalelen = gscale.length - 1;
     } else if (symbolsmap['only letters'] == true) {
       gscale = gscale3;
 
-      gscalelen = gscale.length;
+      gscalelen = gscale.length - 1;
     }
 
     img.Image imageg = img.Image(width * fontindex, height * fontindex);
 
     img.fill(imageg, fillcolor);
 
-    print(gscale);
-    print(gscalelen);
+    //
+    //
+    //
+    //
 
-    for (int i = 0; i < height; i++) {
-      for (int j = 0; j < width; j++) {
-        //get pixle colors
+    if ((filtersmap['Grey scale'] == true) ||
+        (filtersmap['green text'] == true)) {
+      var printcolor = 0Xff000000;
+      if (filtersmap['green text'] == true) {
+        printcolor = 0Xff26F64A;
+      }
 
-        int red = photodata[i * width + j] & 0xff;
-        int green = (photodata[i * width + j] >> 8) & 0xff;
-        int blue = (photodata[i * width + j] >> 16) & 0xff;
-        int alpha = (photodata[i * width + j] >> 24) & 0xff;
+      for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+          //get pixle colors
 
-        //cal avg
-        double avg = (blue + red + green + alpha) / 4;
+          int red = photodata[i * width + j] & 0xff;
+          int green = (photodata[i * width + j] >> 8) & 0xff;
+          int blue = (photodata[i * width + j] >> 16) & 0xff;
+          int alpha = (photodata[i * width + j] >> 24) & 0xff;
 
-        var k = gscale[((avg * gscalelen) / 255).round()];
+          //cal avg
+          double avg = (blue + red + green + alpha) / 4;
 
-        img.drawChar(imageg, drawfonts, j * fontindex, i * fontindex, k,
-            color: 0Xff000000);
+          var k = gscale[((avg * gscalelen) / 255).round()];
+
+          img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
+              color: printcolor);
+        }
       }
     }
 
