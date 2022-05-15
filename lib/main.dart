@@ -71,6 +71,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final String gscale3 = "BWMoahkbdpqwmZOQLCJUYXzcvunxrjftilI ";
 
+  final List<int> rainbow = [
+    0Xffd30094,
+    0Xff82004b,
+    0Xffff0000,
+    0Xff00ff00,
+    0Xff00ffff,
+    0Xff007fff,
+    0Xff0000ff
+  ];
+
   double _valuecom = 0.5;
 
   double _valueblur = 0.0;
@@ -79,7 +89,10 @@ class _MyHomePageState extends State<MyHomePage> {
     'Grey scale': true,
     'Normal colors': false,
     'sepia': false,
-    'green text': false
+    'green text': false,
+    'photo hash 1': false,
+    'photo hash 2': false,
+    'photo hash 3': false,
   };
 
   Map<String, bool> typemap = {
@@ -122,9 +135,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     int width = photo!.width;
 
-    print(height);
-    print(width);
-
     photo = img.copyResize(photo!, width: (width * _valuecom).round());
 
     height = photo!.height;
@@ -133,8 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     List<int> photodata = photo!.data;
 
-    print(height);
-    print(width);
+    
 
     img.gaussianBlur(photo!, _valueblur.round());
 
@@ -152,12 +161,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
     img.BitmapFont drawfonts = img.arial_14;
 
-    int fontindex = 14;
+    int fontindex = 12;
 
     if (fontmap['24 px'] == true) {
       drawfonts = img.arial_24;
 
-      fontindex = 24;
+      fontindex = 22;
     }
 
     String gscale = gscale1;
@@ -182,6 +191,85 @@ class _MyHomePageState extends State<MyHomePage> {
     //
     //
     //
+
+    if ((filtersmap['Normal colors'] == true) ||
+        (filtersmap['sepia'] == true)) {
+      if (filtersmap['sepia'] == true) {
+        photo = img.sepia(photo!, amount: 1);
+        photodata = photo!.data;
+      }
+
+      for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+          //get pixle colors
+
+          int red = photodata[i * width + j] & 0xff;
+          int green = (photodata[i * width + j] >> 8) & 0xff;
+          int blue = (photodata[i * width + j] >> 16) & 0xff;
+          int alpha = (photodata[i * width + j] >> 24) & 0xff;
+
+          //cal avg
+          double avg = (blue + red + green + alpha) / 4;
+
+          var k = gscale[((avg * gscalelen) / 255).round()];
+
+          img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
+              color: photodata[i * width + j]);
+        }
+      }
+    }
+
+    if ((filtersmap['photo hash 1'] == true) ||
+        (filtersmap['photo hash 2'] == true) ||
+        (filtersmap['photo hash 3'] == true)) {
+          ///
+          ////
+          ///
+          ///
+      if (filtersmap['photo hash 1'] == true) {
+        for (int i = 0; i < height; i++) {
+          for (int j = 0; j < width; j++) {
+            //get pixle colors
+
+            int red = photodata[i * width + j] & 0xff;
+            int green = (photodata[i * width + j] >> 8) & 0xff;
+            int blue = (photodata[i * width + j] >> 16) & 0xff;
+            int alpha = (photodata[i * width + j] >> 24) & 0xff;
+
+            //cal avg
+            double avg = (blue + red + green + alpha) / 4;
+
+            var k = gscale[((avg * gscalelen) / 255).round()];
+
+            img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
+                color: rainbow[(i * width + j) % 7]);
+          }
+        }
+      } else {
+        var rainbow0 = rainbow;
+        if (filtersmap['photo hash 3'] == true) {
+           rainbow0 = rainbow.reversed.toList();
+        } 
+        for (int i = 0; i < height; i++) {
+          for (int j = 0; j < width; j++) {
+            //get pixle colors
+
+            int red = photodata[i * width + j] & 0xff;
+            int green = (photodata[i * width + j] >> 8) & 0xff;
+            int blue = (photodata[i * width + j] >> 16) & 0xff;
+            int alpha = (photodata[i * width + j] >> 24) & 0xff;
+
+            //cal avg
+            double avg = (blue + red + green + alpha) / 4;
+
+            var k = gscale[((avg * gscalelen) / 255).round()];
+
+            img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
+                color: rainbow0[((avg * 6) / 255).round()]);
+          }
+        }
+      }
+    }
 
     if ((filtersmap['Grey scale'] == true) ||
         (filtersmap['green text'] == true)) {
@@ -223,6 +311,7 @@ class _MyHomePageState extends State<MyHomePage> {
           (s) => ChoiceChip(
             label: Text(s),
             selected: typemap[s]!,
+            
             onSelected: (bool selected) {
               typemap.forEach((k, v) => typemap[k] = false);
               typemap[s] = true;
@@ -241,6 +330,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     var fliters = [filtersmap, fontmap, brcmap, symbolsmap]
         .map<Column>((a) => Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(chipname[a]!),
                 Wrap(
@@ -249,6 +339,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         .map<ChoiceChip>(
                           (s) => ChoiceChip(
                             label: Text(s),
+                            padding: const EdgeInsets.all(3.0),
+                            selectedColor: Colors.blue,
                             selected: a[s]!,
                             onSelected: (bool selected) {
                               a.forEach((k, v) => a[k] = false);
