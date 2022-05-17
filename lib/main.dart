@@ -11,6 +11,8 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 //import 'package:flutter/services.dart';
 //import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
+// import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:image/image.dart' as img;
 
@@ -43,7 +45,6 @@ class Imgfilterobj {
   Map<String, bool>? brc;
   Map<String, bool>? fonts;
   Map<String, bool>? symbols;
-  Map<String, bool>? type;
 
   Imgfilterobj(
     this.bytes,
@@ -53,14 +54,80 @@ class Imgfilterobj {
     this.brc,
     this.fonts,
     this.symbols,
-    this.type,
   ) {
     this._vacom = _vacom;
     this._vablur = _vablur;
   }
 }
 
-Uint8List Photo_Hash(Imgfilterobj imgfobj) {
+class Imgfilterobjtxt {
+  final String gscale1 =
+      "\$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+
+  final String gscale2 = '@%#*+=-:. ';
+
+  final String gscale3 = "BWMoahkbdpqwmZOQLCJUYXzcvunxrjftilI ";
+  Uint8List? bytes;
+  Map<String, bool>? symbols;
+  int clos = 100;
+
+  Imgfilterobjtxt(this.bytes, this.clos, this.symbols) {
+    ;
+  }
+}
+
+List<String> photohashtxt(Imgfilterobjtxt imgfobjtxt) {
+  List<String>? res;
+
+  img.Image? photo;
+
+  photo = img.decodeImage(imgfobjtxt.bytes!);
+
+  photo = img.copyResize(photo!, width: imgfobjtxt.clos);
+
+  int height = photo.height;
+
+  int width = photo.width;
+
+  List<int> photodata = photo.data;
+
+  String gscale = imgfobjtxt.gscale1;
+
+  int gscalelen = gscale.length - 1;
+
+  if (imgfobjtxt.symbols!['only symbols'] == true) {
+    gscale = imgfobjtxt.gscale2;
+
+    gscalelen = gscale.length - 1;
+  } else if (imgfobjtxt.symbols!['only letters'] == true) {
+    gscale = imgfobjtxt.gscale3;
+
+    gscalelen = gscale.length - 1;
+  }
+
+  for (int i = 0; i < height; i++) {
+    String row = '';
+    for (int j = 0; j < width; j++) {
+      //get pixle colors
+
+      int red = photodata[i * width + j] & 0xff;
+      int green = (photodata[i * width + j] >> 8) & 0xff;
+      int blue = (photodata[i * width + j] >> 16) & 0xff;
+      int alpha = (photodata[i * width + j] >> 24) & 0xff;
+
+      //cal avg
+      double avg = (blue + red + green + alpha) / 4;
+
+      var k = gscale[((avg * gscalelen) / 255).round()];
+      row = row + k;
+    }
+    res?.add(row);
+  }
+
+  return res!;
+}
+
+Uint8List photohash(Imgfilterobj imgfobj) {
   img.Image? photo;
 
   photo = img.decodeImage(imgfobj.bytes!);
@@ -279,6 +346,7 @@ class _MyHomePageState extends State<MyHomePage> {
   XFile? image;
 
   Uint8List? imagebytes;
+
   final String gscale1 =
       "\$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
 
@@ -286,7 +354,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final String gscale3 = "BWMoahkbdpqwmZOQLCJUYXzcvunxrjftilI ";
 
-  String name = 'name ';
+  String name = '';
 
   final List<int> rainbow = [
     0Xffd30094,
@@ -299,7 +367,10 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   bool prograss = false;
+
   bool done = false;
+
+  int columns = 100;
 
   double _valuecom = 0.5;
 
@@ -349,17 +420,59 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future converthash() async {
-    var imgfobj = Imgfilterobj(imagebytes!, _valuecom, _valueblur, filtersmap,
-        brcmap, fontmap, symbolsmap, typemap);
+    Directory appDocDir = await getApplicationDocumentsDirectory();
+    String appDocPath = appDocDir.path;
 
-    print(imgfobj.toString());
-    imagebytes = await compute(Photo_Hash, imgfobj);
-    setState(() => {});
+    if (typemap['image'] == true) {
+      var imgfobj = Imgfilterobj(imagebytes!, _valuecom, _valueblur, filtersmap,
+          brcmap, fontmap, symbolsmap);
+
+      prograss = true;
+      setState(() => {});
+
+      imagebytes = await compute(photohash, imgfobj);
+      File f = File('$appDocDir/asciiart/$name.png');
+      f.writeAsBytes(imagebytes!);
+      done = true;
+      prograss = false;
+      setState(() => {});
+    } else if (typemap['text'] == true) {
+      var imgfobj = Imgfilterobjtxt(imagebytes!, columns, symbolsmap);
+
+      prograss = true;
+      setState(() => {});
+
+      List<String> text = await compute(photohashtxt, imgfobj);
+      File f = File('$appDocDir/asciiart/$name.txt');
+      
+      done = true;
+      prograss = false;
+      imagebytes = null;
+      setState(() => {});
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     var typeList = typemap.keys
+        .toList()
+        .map<ChoiceChip>(
+          (s) => ChoiceChip(
+            label: Text(s),
+            selected: typemap[s]!,
+            padding: const EdgeInsets.all(3.0),
+            selectedColor: Colors.green,
+            backgroundColor: Colors.black.withOpacity(0.7),
+            onSelected: (bool selected) {
+              typemap.forEach((k, v) => typemap[k] = false);
+              typemap[s] = true;
+              setState(() => {});
+            },
+          ),
+        )
+        .toList();
+
+    var symbolsList = symbolsmap.keys
         .toList()
         .map<ChoiceChip>(
           (s) => ChoiceChip(
@@ -424,6 +537,110 @@ class _MyHomePageState extends State<MyHomePage> {
             ))
         .toList();
 
+    var imageob = Column(
+      children: [
+        Column(
+          children: [
+            const Text(
+              "comration scale",
+              style: TextStyle(
+                  color: Colors.white60,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
+            ),
+            Container(
+              padding: const EdgeInsets.all(3.0),
+              child: SfSlider(
+                min: 0.1,
+                max: 1.0,
+                value: _valuecom,
+                showTicks: true,
+                showLabels: true,
+                enableTooltip: true,
+                minorTicksPerInterval: 1,
+                onChanged: (dynamic value) {
+                  setState(() {
+                    _valuecom = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+        Column(
+          children: [
+            const Text(
+              "blur index",
+              style: TextStyle(
+                  color: Colors.white60,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
+            ),
+            Container(
+              padding: const EdgeInsets.all(3.0),
+              child: SfSlider(
+                min: 0.0,
+                max: 10.0,
+                value: _valueblur,
+                interval: 1.0,
+                showTicks: true,
+                showLabels: true,
+                enableTooltip: true,
+                minorTicksPerInterval: 1,
+                onChanged: (dynamic value) {
+                  setState(() {
+                    _valueblur = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+        Column(
+          children: fliters,
+        ),
+      ],
+    );
+
+    var txtob = Column(
+      children: [
+        const Text(
+          'Enter the number of columns or the number of charctars per line the you want in the output text file',
+          style: TextStyle(
+              color: Colors.white60, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        TextField(
+          decoration: const InputDecoration(labelText: "Enter number columns"),
+          keyboardType: TextInputType.number,
+          inputFormatters: <TextInputFormatter>[
+            FilteringTextInputFormatter.digitsOnly
+          ],
+
+          onChanged: (String num) {
+            columns = int.parse(num);
+            setState(() => {});
+          }, // Only numbers can be entered
+        ),
+        Column(
+          children: [
+            // ignore: prefer_const_constructors
+            Text(
+              "output type",
+              style: const TextStyle(
+                  color: Colors.white60,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
+            ),
+            Wrap(
+              spacing: 3,
+              runSpacing: 3,
+              children: symbolsList,
+            ),
+          ],
+        ),
+      ],
+    );
+
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -458,7 +675,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   width: double.infinity,
                   decoration: const BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(5)),
-                      color: Colors.blueGrey),
+                      color: Color(0Xffc4c4c4)),
                   height: 70.0,
                   child: Row(
                     children: const [
@@ -487,19 +704,32 @@ class _MyHomePageState extends State<MyHomePage> {
                           width: double.infinity,
                           child: Expanded(
                             child: imagebytes == null
-                                ? Center(
-                                    child: MaterialButton(
-                                        height: 30.0,
-                                        color: Colors.blue,
-                                        child: const Text(
-                                            "Pick Image from Gallery",
-                                            style: TextStyle(
-                                                color: Colors.white70,
-                                                fontWeight: FontWeight.bold)),
-                                        onPressed: () {
-                                          pickImage();
-                                        }),
-                                  )
+                                ? Container(
+                                    child: done == false
+                                        ? Center(
+                                            child: MaterialButton(
+                                                height: 30.0,
+                                                color: Colors.blue,
+                                                child: const Text(
+                                                    "Pick Image from Gallery",
+                                                    style: TextStyle(
+                                                        color: Colors.white70,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                                onPressed: () {
+                                                  pickImage();
+                                                }),
+                                          )
+                                        : Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    const BorderRadius.all(
+                                                        Radius.circular(25)),
+                                                color: Colors.black
+                                                    .withOpacity(0.7)),
+                                            child: Text(
+                                                'your image was saved as $name.txt'),
+                                          ))
                                 : Stack(
                                     alignment:
                                         AlignmentDirectional.bottomCenter,
@@ -523,148 +753,106 @@ class _MyHomePageState extends State<MyHomePage> {
                                                       alignment:
                                                           Alignment.center,
                                                     ),
-                                                    MaterialButton(
-                                                        height: 30.0,
-                                                        color: Colors.blue,
-                                                        child: const Text(
-                                                            "Chang Image ",
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .white70,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)),
-                                                        onPressed: () {
-                                                          pickImage();
-                                                        }),
-                                                    Column(
-                                                      children: [
-                                                        // ignore: prefer_const_constructors
-                                                        Text(
-                                                          "output type",
-                                                          style: const TextStyle(
-                                                              color: Colors
-                                                                  .white60,
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                        Wrap(
-                                                          spacing: 3,
-                                                          runSpacing: 3,
-                                                          children: typeList,
-                                                        ),
-                                                      ],
+                                                    Container(
+                                                      child: done == false
+                                                          ? Column(
+                                                              children: [
+                                                                MaterialButton(
+                                                                    height:
+                                                                        30.0,
+                                                                    color: Colors
+                                                                        .blue,
+                                                                    child: const Text(
+                                                                        "Chang Image ",
+                                                                        style: TextStyle(
+                                                                            color: Colors
+                                                                                .white70,
+                                                                            fontWeight: FontWeight
+                                                                                .bold)),
+                                                                    onPressed:
+                                                                        () {
+                                                                      pickImage();
+                                                                    }),
+                                                                Column(
+                                                                  children: [
+                                                                    // ignore: prefer_const_constructors
+                                                                    Text(
+                                                                      "output type",
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .white60,
+                                                                          fontSize:
+                                                                              16,
+                                                                          fontWeight:
+                                                                              FontWeight.bold),
+                                                                    ),
+                                                                    Wrap(
+                                                                      spacing:
+                                                                          3,
+                                                                      runSpacing:
+                                                                          3,
+                                                                      children:
+                                                                          typeList,
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                TextField(
+                                                                  decoration:
+                                                                      const InputDecoration(
+                                                                    border:
+                                                                        OutlineInputBorder(),
+                                                                    hintText:
+                                                                        'output filen ame ',
+                                                                  ),
+                                                                  onChanged:
+                                                                      (text) {
+                                                                    name = text;
+                                                                    setState(
+                                                                        () =>
+                                                                            {});
+                                                                  },
+                                                                ),
+                                                                Container(
+                                                                    child: typemap['image'] ==
+                                                                            true
+                                                                        ? imageob
+                                                                        : txtob),
+                                                                MaterialButton(
+                                                                    height:
+                                                                        50.0,
+                                                                    color: Colors
+                                                                        .blue,
+                                                                    child: const Text(
+                                                                        "Convert",
+                                                                        style: TextStyle(
+                                                                            color: Colors
+                                                                                .white70,
+                                                                            fontWeight: FontWeight
+                                                                                .bold)),
+                                                                    onPressed:
+                                                                        () {
+                                                                      converthash();
+                                                                    }),
+                                                              ],
+                                                            )
+                                                          : Container(
+                                                              decoration: BoxDecoration(
+                                                                  borderRadius: const BorderRadius
+                                                                          .all(
+                                                                      Radius.circular(
+                                                                          25)),
+                                                                  color: Colors
+                                                                      .black
+                                                                      .withOpacity(
+                                                                          0.7)),
+                                                              child: Text(
+                                                                  'your image was saved as $name.png')),
                                                     ),
-                                                    TextField(
-                                                      decoration:
-                                                          const InputDecoration(
-                                                        border:
-                                                            OutlineInputBorder(),
-                                                        hintText:
-                                                            'output filen ame ',
-                                                      ),
-                                                      onChanged: (text) {
-                                                        name = text;
-                                                        setState(() => {});
-                                                      },
-                                                    ),
-                                                    Column(
-                                                      children: [
-                                                        const Text(
-                                                          "comration scale",
-                                                          style: TextStyle(
-                                                              color: Colors
-                                                                  .white60,
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(3.0),
-                                                          child: SfSlider(
-                                                            min: 0.1,
-                                                            max: 1.0,
-                                                            value: _valuecom,
-                                                            showTicks: true,
-                                                            showLabels: true,
-                                                            enableTooltip: true,
-                                                            minorTicksPerInterval:
-                                                                1,
-                                                            onChanged: (dynamic
-                                                                value) {
-                                                              setState(() {
-                                                                _valuecom =
-                                                                    value;
-                                                              });
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Column(
-                                                      children: [
-                                                        const Text(
-                                                          "blur index",
-                                                          style: TextStyle(
-                                                              color: Colors
-                                                                  .white60,
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(3.0),
-                                                          child: SfSlider(
-                                                            min: 0.0,
-                                                            max: 10.0,
-                                                            value: _valueblur,
-                                                            interval: 1.0,
-                                                            showTicks: true,
-                                                            showLabels: true,
-                                                            enableTooltip: true,
-                                                            minorTicksPerInterval:
-                                                                1,
-                                                            onChanged: (dynamic
-                                                                value) {
-                                                              setState(() {
-                                                                _valueblur =
-                                                                    value;
-                                                              });
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Column(
-                                                      children: fliters,
-                                                    ),
-                                                    MaterialButton(
-                                                        height: 50.0,
-                                                        color: Colors.blue,
-                                                        child: const Text(
-                                                            "Convert",
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .white70,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)),
-                                                        onPressed: () {
-                                                          converthash();
-                                                        }),
                                                   ],
                                                 )
                                               : Container(
                                                   child:
-                                                      CircularProgressIndicator(),
+                                                      const CircularProgressIndicator(),
                                                 )),
                                     ],
                                   ),
