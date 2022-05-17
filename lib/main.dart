@@ -432,7 +432,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       imagebytes = await compute(photohash, imgfobj);
       File f = File('$appDocDir/asciiart/$name.png');
-      f.writeAsBytes(imagebytes!);
+      await f.writeAsBytes(imagebytes!);
       done = true;
       prograss = false;
       setState(() => {});
@@ -443,8 +443,11 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() => {});
 
       List<String> text = await compute(photohashtxt, imgfobj);
+      int lentxt = text.length;
       File f = File('$appDocDir/asciiart/$name.txt');
-      
+      for (int i = 0; i < lentxt; i++) {
+        await f.writeAsString(text[i], mode: FileMode.append);
+      }
       done = true;
       prograss = false;
       imagebytes = null;
