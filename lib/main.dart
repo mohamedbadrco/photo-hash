@@ -38,6 +38,18 @@ class Imgfilterobj {
     0Xff0000ff
   ];
 
+  final Map<String, int> singlecolormap = {
+    'Violet symbols': 0Xffd30094,
+    'Indigo symbols': 0Xff82004b,
+    'Blue symbols': 0Xffff0000,
+    'Green symbols': 0Xff00ff00,
+    'Yellow symbols': 0Xff00ffff,
+    'Orange symbols': 0Xff007fff,
+    'Red symbols': 0Xff0000ff,
+    'Grey scale': 0Xff000000,
+    'terminal green text': 0Xff26F64A
+  };
+
   Uint8List? bytes;
   double? _vacom;
   double? _vablur;
@@ -77,7 +89,7 @@ class Imgfilterobjtxt {
 }
 
 List<String> photohashtxt(Imgfilterobjtxt imgfobjtxt) {
-  List<String>? res;
+  List<String> res = [''];
 
   img.Image? photo;
 
@@ -118,13 +130,15 @@ List<String> photohashtxt(Imgfilterobjtxt imgfobjtxt) {
       //cal avg
       double avg = (blue + red + green + alpha) / 4;
 
-      var k = gscale[((avg * gscalelen) / 255).round()];
+      String k = gscale[((avg * gscalelen) / 255).round()];
       row = row + k;
     }
-    res?.add(row);
+    res.add(row);
   }
 
-  return res!;
+  // List<String> res1 = res;
+
+  return res;
 }
 
 Uint8List photohash(Imgfilterobj imgfobj) {
@@ -136,7 +150,7 @@ Uint8List photohash(Imgfilterobj imgfobj) {
 
   int width = photo.width;
 
-  photo = img.copyResize(photo, width: (width * imgfobj._vacom!.round()));
+  photo = img.copyResize(photo, width: ((width * imgfobj._vacom!).round()));
 
   height = photo.height;
 
@@ -269,30 +283,33 @@ Uint8List photohash(Imgfilterobj imgfobj) {
       }
     }
   }
+  List<String> singlecolor = imgfobj.singlecolormap.keys.toList();
 
-  if ((imgfobj.filters!['Grey scale'] == true) ||
-      (imgfobj.filters!['green text'] == true)) {
-    var printcolor = 0Xff000000;
-    if (imgfobj.filters!['green text'] == true) {
-      printcolor = 0Xff26F64A;
-    }
+  for (int k = 0; k < singlecolor.length; k++) {
+    if (imgfobj.filters![singlecolor[k]] == true) {
+      var printcolor = imgfobj.singlecolormap[singlecolor[k]];
 
-    for (int i = 0; i < height; i++) {
-      for (int j = 0; j < width; j++) {
-        //get pixle colors
+      if ((singlecolor[k] == 'Grey scale') && imgfobj.brc!['blue'] == true) {
+        printcolor = 0Xffffffff;
+      }
 
-        int red = photodata[i * width + j] & 0xff;
-        int green = (photodata[i * width + j] >> 8) & 0xff;
-        int blue = (photodata[i * width + j] >> 16) & 0xff;
-        int alpha = (photodata[i * width + j] >> 24) & 0xff;
+      for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+          //get pixle colors
 
-        //cal avg
-        double avg = (blue + red + green + alpha) / 4;
+          int red = photodata[i * width + j] & 0xff;
+          int green = (photodata[i * width + j] >> 8) & 0xff;
+          int blue = (photodata[i * width + j] >> 16) & 0xff;
+          int alpha = (photodata[i * width + j] >> 24) & 0xff;
 
-        var k = gscale[((avg * gscalelen) / 255).round()];
+          //cal avg
+          double avg = (blue + red + green + alpha) / 4;
 
-        img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
-            color: printcolor);
+          var k = gscale[((avg * gscalelen) / 255).round()];
+
+          img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
+              color: printcolor!);
+        }
       }
     }
   }
@@ -380,10 +397,17 @@ class _MyHomePageState extends State<MyHomePage> {
     'Grey scale': true,
     'Normal colors': false,
     'sepia': false,
-    'green text': false,
+    'terminal green text': false,
     'photo hash 1': false,
     'photo hash 2': false,
     'photo hash 3': false,
+    'Violet symbols': false,
+    'Indigo symbols': false,
+    'Blue symbols': false,
+    'Green symbols': false,
+    'Yellow symbols': false,
+    'Orange symbols': false,
+    'Red symbols': false,
   };
 
   Map<String, bool> typemap = {
@@ -406,6 +430,9 @@ class _MyHomePageState extends State<MyHomePage> {
     'only symbols': false,
     'only letters': false
   };
+
+  int lent = 0;
+  int lenc = 0;
 
   Future pickImage() async {
     try {
@@ -449,9 +476,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
       int lentxt = text.length;
 
-      print(lentxt);
-      print(text[0].length);
-
       // File f = File('$appDocDir/$name.txt');
 
       // for (int i = 0; i < lentxt; i++) {
@@ -463,7 +487,7 @@ class _MyHomePageState extends State<MyHomePage> {
       prograss = false;
 
       imagebytes = null;
-      setState(() => {});
+      setState(() => {lent = lentxt, lenc = text[1].length});
     }
   }
 
@@ -746,7 +770,11 @@ Enter the number of columns or the number of charctars per
                                                 color: Colors.black
                                                     .withOpacity(0.7)),
                                             child: Text(
-                                                'your image was saved as ${name}.txt'),
+                                                'your image was ${lent} +++_______+++  ${lenc} saved as ${name}.txt',
+                                                style: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
                                           ))
                                 : Stack(
                                     alignment:
