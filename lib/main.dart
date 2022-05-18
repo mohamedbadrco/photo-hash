@@ -289,7 +289,7 @@ Uint8List photohash(Imgfilterobj imgfobj) {
     if (imgfobj.filters![singlecolor[k]] == true) {
       var printcolor = imgfobj.singlecolormap[singlecolor[k]];
 
-      if ((singlecolor[k] == 'Grey scale') && imgfobj.brc!['blue'] == true) {
+      if ((singlecolor[k] == 'Grey scale') && imgfobj.brc!['black'] == true) {
         printcolor = 0Xffffffff;
       }
 
