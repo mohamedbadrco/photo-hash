@@ -72,7 +72,7 @@ class Imgfilterobjtxt {
   int clos = 100;
 
   Imgfilterobjtxt(this.bytes, this.clos, this.symbols) {
-    ;
+    // Ignored
   }
 }
 
@@ -370,7 +370,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   bool done = false;
 
-  int columns = 100;
+  int? columns = 100;
 
   double _valuecom = 0.5;
 
@@ -420,8 +420,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future converthash() async {
-    Directory appDocDir = await getApplicationDocumentsDirectory();
-    String appDocPath = appDocDir.path;
+    // Directory appDocDir = await getApplicationDocumentsDirectory();
+    // String appDocPath = appDocDir.path;
 
     if (typemap['image'] == true) {
       var imgfobj = Imgfilterobj(imagebytes!, _valuecom, _valueblur, filtersmap,
@@ -431,25 +431,33 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() => {});
 
       imagebytes = await compute(photohash, imgfobj);
-      File f = File('$appDocDir/asciiart/$name.png');
-      await f.writeAsBytes(imagebytes!);
+
+      // File f = File('$appDocDir/asciiart/$name.png');
+      // await f.writeAsBytes(imagebytes!);
+
       done = true;
       prograss = false;
       setState(() => {});
     } else if (typemap['text'] == true) {
-      var imgfobj = Imgfilterobjtxt(imagebytes!, columns, symbolsmap);
+      var imgfobj = Imgfilterobjtxt(imagebytes!, columns!, symbolsmap);
 
       prograss = true;
       setState(() => {});
 
       List<String> text = await compute(photohashtxt, imgfobj);
+
       int lentxt = text.length;
-      File f = File('$appDocDir/asciiart/$name.txt');
-      for (int i = 0; i < lentxt; i++) {
-        await f.writeAsString(text[i], mode: FileMode.append);
-      }
+
+      // File f = File('$appDocDir/asciiart/$name.txt');
+
+      // for (int i = 0; i < lentxt; i++) {
+      //   await f.writeAsString(text[i], mode: FileMode.append);
+      // }
+
       done = true;
+
       prograss = false;
+
       imagebytes = null;
       setState(() => {});
     }
@@ -628,7 +636,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             // ignore: prefer_const_constructors
             Text(
-              "output type",
+              "Symbols",
               style: const TextStyle(
                   color: Colors.white60,
                   fontSize: 16,
@@ -678,7 +686,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   width: double.infinity,
                   decoration: const BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(5)),
-                      color: Color(0Xffc4c4c4)),
+                      color: Color(0xffc4c4c4)),
                   height: 70.0,
                   child: Row(
                     children: const [
@@ -731,7 +739,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 color: Colors.black
                                                     .withOpacity(0.7)),
                                             child: Text(
-                                                'your image was saved as $name.txt'),
+                                                'your image was saved as ${name}.txt'),
                                           ))
                                 : Stack(
                                     alignment:
@@ -805,7 +813,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                     border:
                                                                         OutlineInputBorder(),
                                                                     hintText:
-                                                                        'output filen ame ',
+                                                                        'output file name ',
                                                                   ),
                                                                   onChanged:
                                                                       (text) {
@@ -838,7 +846,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                     }),
                                                               ],
                                                             )
-                                                          : Container(
+                                                          : //
+                                                          Container(
                                                               decoration: BoxDecoration(
                                                                   borderRadius: const BorderRadius
                                                                           .all(
@@ -849,13 +858,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                       .withOpacity(
                                                                           0.7)),
                                                               child: Text(
-                                                                  'your image was saved as $name.png')),
+                                                                  'your image was saved as ${name}.png')),
                                                     ),
                                                   ],
                                                 )
-                                              : Container(
+                                              : //
+                                              const SizedBox(
+                                                  height: 1000,
                                                   child:
-                                                      const CircularProgressIndicator(),
+                                                      CircularProgressIndicator(),
                                                 )),
                                     ],
                                   ),
