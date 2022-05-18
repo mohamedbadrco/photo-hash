@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 //import 'package:multi_select_flutter/multi_select_flutter.dart';
 //import 'package:flutter/services.dart';
-//import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
 // import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
@@ -307,7 +307,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: '#PHOTO HASH',
       theme: ThemeData(
           // This is the theme of your application.
           //
@@ -432,23 +432,27 @@ class _MyHomePageState extends State<MyHomePage> {
 
       imagebytes = await compute(photohash, imgfobj);
 
-      // File f = File('$appDocDir/asciiart/$name.png');
+      // File f = File('$appDocDir/$name.png');
       // await f.writeAsBytes(imagebytes!);
 
       done = true;
       prograss = false;
       setState(() => {});
     } else if (typemap['text'] == true) {
-      var imgfobj = Imgfilterobjtxt(imagebytes!, columns!, symbolsmap);
+      var imgfobjtxt = Imgfilterobjtxt(imagebytes!, columns!, symbolsmap);
 
       prograss = true;
+
       setState(() => {});
 
-      List<String> text = await compute(photohashtxt, imgfobj);
+      List<String> text = await compute(photohashtxt, imgfobjtxt);
 
       int lentxt = text.length;
 
-      // File f = File('$appDocDir/asciiart/$name.txt');
+      print(lentxt);
+      print(text[0].length);
+
+      // File f = File('$appDocDir/$name.txt');
 
       // for (int i = 0; i < lentxt; i++) {
       //   await f.writeAsString(text[i], mode: FileMode.append);
@@ -488,13 +492,13 @@ class _MyHomePageState extends State<MyHomePage> {
         .map<ChoiceChip>(
           (s) => ChoiceChip(
             label: Text(s),
-            selected: typemap[s]!,
+            selected: symbolsmap[s]!,
             padding: const EdgeInsets.all(3.0),
             selectedColor: Colors.green,
             backgroundColor: Colors.black.withOpacity(0.7),
             onSelected: (bool selected) {
-              typemap.forEach((k, v) => typemap[k] = false);
-              typemap[s] = true;
+              symbolsmap.forEach((k, v) => symbolsmap[k] = false);
+              symbolsmap[s] = true;
               setState(() => {});
             },
           ),
@@ -616,7 +620,9 @@ class _MyHomePageState extends State<MyHomePage> {
     var txtob = Column(
       children: [
         const Text(
-          'Enter the number of columns or the number of charctars per line the you want in the output text file',
+          '''
+Enter the number of columns or the number of charctars per
+ line the you want in the output text file''',
           style: TextStyle(
               color: Colors.white60, fontSize: 16, fontWeight: FontWeight.bold),
         ),
@@ -732,6 +738,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 }),
                                           )
                                         : Container(
+                                            height: 1000,
                                             decoration: BoxDecoration(
                                                 borderRadius:
                                                     const BorderRadius.all(
