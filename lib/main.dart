@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,6 +16,7 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:image/image.dart' as img;
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -478,6 +480,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  final Uri _url = Uri.parse('https://flutter.dev');
+
+  void _launchUrl() async {
+    if (!await launchUrl(_url)) throw 'Could not launch $_url';
+  }
+
   @override
   Widget build(BuildContext context) {
     var typeList = typemap.keys
@@ -562,6 +570,33 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ))
         .toList();
+
+    TextStyle defaultStyle = const TextStyle(color: Colors.grey, fontSize: 20.0);
+    TextStyle linkStyle = const TextStyle(color: Colors.blue);
+
+    var links1 = RichText(
+      text: TextSpan(
+        style: defaultStyle,
+        children: <TextSpan>[
+          const TextSpan(text: 'By clicking Sign Up, you agree to our '),
+          TextSpan(
+              text: 'Terms of Service',
+              style: linkStyle,
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  _launchUrl();
+                }),
+          const TextSpan(text: ' and that you have read our '),
+          TextSpan(
+              text: 'Privacy Policy',
+              style: linkStyle,
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  _launchUrl();
+                }),
+        ],
+      ),
+    );
 
     var imageob = Column(
       children: [
@@ -686,8 +721,35 @@ Enter the number of columns or the number of charctars per
                         color: Colors.white70, fontWeight: FontWeight.bold))),
           ),
           MaterialButton(
-              height: 30.0,
-              color: Colors.blue,
+              height: 50.0,
+              color: Colors.green.withOpacity(0.6),
+              child: const Text("Go Back",
+                  style: TextStyle(
+                      color: Colors.white70, fontWeight: FontWeight.bold)),
+              onPressed: () {
+                done = false;
+                setState(() => {});
+              }),
+          links1
+        ]));
+    var mesgimg = Center(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+          Container(
+            height: 50,
+            decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(25)),
+                color: Colors.black.withOpacity(0.7)),
+            child: Center(
+                child: Text('your imag was  saved as ${name}.png',
+                    style: const TextStyle(
+                        color: Colors.white70, fontWeight: FontWeight.bold))),
+          ),
+          MaterialButton(
+              height: 50.0,
+              color: Colors.green.withOpacity(0.6),
               child: const Text("Go Back",
                   style: TextStyle(
                       color: Colors.white70, fontWeight: FontWeight.bold)),
@@ -862,18 +924,7 @@ Enter the number of columns or the number of charctars per
                                                               ],
                                                             )
                                                           : //
-                                                          Container(
-                                                              decoration: BoxDecoration(
-                                                                  borderRadius: const BorderRadius
-                                                                          .all(
-                                                                      Radius.circular(
-                                                                          25)),
-                                                                  color: Colors
-                                                                      .black
-                                                                      .withOpacity(
-                                                                          0.7)),
-                                                              child: Text(
-                                                                  'your image was saved as ${name}.png')),
+                                                          mesgimg,
                                                     ),
                                                   ],
                                                 )
