@@ -325,17 +325,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '#PHOTO HASH',
-      theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          // Notice that the counter didn't reset back to zero; the application
-          // is not restarted.
-          primarySwatch: Colors.green),
+      theme: ThemeData(primarySwatch: Colors.green),
       home: const MyHomePage(title: '#PHOTO HASH'),
     );
   }
@@ -343,15 +333,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -447,9 +428,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future converthash() async {
-    // Directory appDocDir = await getApplicationDocumentsDirectory();
-    // String appDocPath = appDocDir.path;
-
     if (typemap['image'] == true) {
       var imgfobj = Imgfilterobj(imagebytes!, _valuecom, _valueblur, filtersmap,
           brcmap, fontmap, symbolsmap);
@@ -459,8 +437,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
       imagebytes = await compute(photohash, imgfobj);
 
-      // File f = File('$appDocDir/$name.png');
-      // await f.writeAsBytes(imagebytes!);
+      if (!kIsWeb) {
+        Directory appDocDir = await getApplicationDocumentsDirectory();
+        String appDocPath = appDocDir.path;
+        File f = File('$appDocDir/$name.png');
+        await f.writeAsBytes(imagebytes!);
+      }
 
       done = true;
       prograss = false;
@@ -476,11 +458,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
       int lentxt = text.length;
 
-      // File f = File('$appDocDir/$name.txt');
+      if (!kIsWeb) {
+        Directory appDocDir = await getApplicationDocumentsDirectory();
+        String appDocPath = appDocDir.path;
 
-      // for (int i = 0; i < lentxt; i++) {
-      //   await f.writeAsString(text[i], mode: FileMode.append);
-      // }
+        File f = File('$appDocDir/$name.txt');
+
+        for (int i = 0; i < lentxt; i++) {
+          await f.writeAsString(text[i], mode: FileMode.append);
+        }
+      }
 
       done = true;
 
@@ -682,33 +669,39 @@ Enter the number of columns or the number of charctars per
       ],
     );
 
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    var mesgtxt = Center(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+          Container(
+            height: 50,
+            decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(25)),
+                color: Colors.black.withOpacity(0.7)),
+            child: Center(
+                child: Text(
+                    'your text was ${lent} +++_______+++  ${lenc} saved as ${name}.txt',
+                    style: const TextStyle(
+                        color: Colors.white70, fontWeight: FontWeight.bold))),
+          ),
+          MaterialButton(
+              height: 30.0,
+              color: Colors.blue,
+              child: const Text("Go Back",
+                  style: TextStyle(
+                      color: Colors.white70, fontWeight: FontWeight.bold)),
+              onPressed: () {
+                done = false;
+                setState(() => {});
+              })
+        ]));
+
     return Scaffold(
       backgroundColor: const Color(0xffdbe9f4),
       body: SingleChildScrollView(
         child: Center(
-          // Center is a layout widget. It takes a single child and positions it
-          // in the middle of the parent.
           child: Column(
-            // Column is also a layout widget. It takes a list of children and
-            // arranges them vertically. By default, it sizes itself to fit its
-            // children horizontally, and tries to be as tall as its parent.
-            //
-            // Invoke "debug painting" (press "p" in the console, choose the
-            // "Toggle Debug Paint" action from the Flutter Inspector in Android
-            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-            // to see the wireframe for each widget.
-            //
-            // Column has various properties to control how it sizes itself and
-            // how it positions its children. Here we use mainAxisAlignment to
-            // center the children vertically; the main axis here is the vertical
-            // axis because Columns are vertical (the cross axis would be
-            // horizontal).
             children: <Widget>[
               Container(
                   alignment: Alignment.center,
@@ -745,7 +738,8 @@ Enter the number of columns or the number of charctars per
                           width: double.infinity,
                           child: Expanded(
                             child: imagebytes == null
-                                ? Container(
+                                ? SizedBox(
+                                    height: MediaQuery.of(context).size.height,
                                     child: done == false
                                         ? Center(
                                             child: MaterialButton(
@@ -761,21 +755,7 @@ Enter the number of columns or the number of charctars per
                                                   pickImage();
                                                 }),
                                           )
-                                        : Container(
-                                            height: 1000,
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                        Radius.circular(25)),
-                                                color: Colors.black
-                                                    .withOpacity(0.7)),
-                                            child: Text(
-                                                'your image was ${lent} +++_______+++  ${lenc} saved as ${name}.txt',
-                                                style: TextStyle(
-                                                    color: Colors.white70,
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                          ))
+                                        : mesgtxt)
                                 : Stack(
                                     alignment:
                                         AlignmentDirectional.bottomCenter,
