@@ -294,7 +294,7 @@ Uint8List photohash(Imgfilterobj imgfobj) {
       var printcolor = imgfobj.singlecolormap[singlecolor[k]];
 
       if ((singlecolor[k] == 'Grey scale') && imgfobj.brc!['black'] == true) {
-        printcolor = 0Xffffffff;
+        printcolor = 0X00ffffff;
       }
 
       for (int i = 0; i < height; i++) {
@@ -682,7 +682,7 @@ class _MyHomePageState extends State<MyHomePage> {
 Enter the number of columns or the number of charctars per
  line the you want in the output text file''',
           style: TextStyle(
-              color: Colors.white60, fontSize: 16, fontWeight: FontWeight.bold),
+              color: Colors.white70, fontSize: 16, fontWeight: FontWeight.bold),
         ),
         TextField(
           decoration: const InputDecoration(labelText: "Enter number columns"),
@@ -715,7 +715,33 @@ Enter the number of columns or the number of charctars per
         ),
       ],
     );
-
+    var goback = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+          primary: Colors.black.withOpacity(0.6),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
+          padding: const EdgeInsets.all(0.0)),
+      onPressed: () {
+        done = false;
+        imagebytes = null;
+        setState(() => {});
+      },
+      child: Ink(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20.0)),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 150.0, minHeight: 50.0),
+          alignment: Alignment.center,
+          child: const Text(
+            "Go Back",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+    );
     var mesgtxt = Center(
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -734,20 +760,7 @@ Enter the number of columns or the number of charctars per
                         color: Colors.white70, fontWeight: FontWeight.bold))),
           ),
           links1,
-          Material(
-            color: Colors.black.withOpacity(0.6),
-            borderRadius: BorderRadius.circular(30.0),
-            child: MaterialButton(
-                height: 50.0,
-                color: Colors.grey.withOpacity(0.6),
-                child: const Text("Go Back",
-                    style: TextStyle(
-                        color: Colors.black54, fontWeight: FontWeight.bold)),
-                onPressed: () {
-                  done = false;
-                  setState(() => {});
-                }),
-          )
+          goback
         ]));
     var mesgimg = Center(
         child: Column(
@@ -767,125 +780,94 @@ Enter the number of columns or the number of charctars per
                         color: Colors.white70, fontWeight: FontWeight.bold))),
           ),
           links1,
-          MaterialButton(
-              height: 50.0,
-              color: Colors.green.withOpacity(0.6),
-              child: const Text("Go Back",
-                  style: TextStyle(
-                      color: Colors.white70, fontWeight: FontWeight.bold)),
-              onPressed: () {
-                done = false;
-                imagebytes = null;
-                setState(() => {});
-              })
+          goback
         ]));
 
     var home = Column(children: [
-      const Text(
-          'fnjrfjrnnjcfnfncjrfncjrncrjncrfjcnrjcnrfcjrcrfjcnrjcncnrjcncnrjc'),
+      Container(
+        margin: const EdgeInsets.all(5.0),
+        padding: const EdgeInsets.all(40.0),
+        child: const Text('''
+Pick an image  choose output type image/text apply filters an then review the resulets ''',
+            style: TextStyle(color: Colors.grey, fontSize: 18.0)),
+      ),
       const Spacer(),
-      MaterialButton(
-          height: 30.0,
-          color: Colors.blue,
-          child: const Text("Pick Image from Gallery",
-              style: TextStyle(
-                  color: Colors.white70, fontWeight: FontWeight.bold)),
-          onPressed: () {
-            pickImage();
-          }),
+      Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(15.0),
+            child: const Text('pick an image',
+                style: TextStyle(color: Colors.grey, fontSize: 18.0)),
+          ),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Colors.black54,
+                shape: const CircleBorder(), //<-- SEE HERE
+                padding: const EdgeInsets.all(20),
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white70,
+                size: 50.0,
+              ),
+              onPressed: () {
+                pickImage();
+              }),
+        ],
+      ),
+      const Spacer(),
+      links1
     ]);
 
-    var stack = Stack(
-      alignment: AlignmentDirectional.bottomCenter,
-      children: [
-        Container(
-          width: MediaQuery.of(context).size.width,
+    var change = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+          primary: Colors.white.withOpacity(0.1),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
+          padding: const EdgeInsets.all(0.0)),
+      onPressed: () {
+        pickImage();
+      },
+      child: Ink(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20.0)),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 150.0, minHeight: 50.0),
+          alignment: Alignment.center,
+          child: const Text(
+            "Change Image ",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold),
+          ),
         ),
-        Container(
-            child: prograss == false
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.memory(
-                        imagebytes!,
-                        width: MediaQuery.of(context).size.width,
-                        alignment: Alignment.center,
-                      ),
-                      Container(
-                        child: done == false
-                            ? Column(
-                                children: [
-                                  MaterialButton(
-                                      height: 30.0,
-                                      color: Colors.blue,
-                                      child: const Text("Chang Image ",
-                                          style: TextStyle(
-                                              color: Colors.white70,
-                                              fontWeight: FontWeight.bold)),
-                                      onPressed: () {
-                                        pickImage();
-                                      }),
-                                  Column(
-                                    children: [
-                                      // ignore: prefer_const_constructors
-                                      Text(
-                                        "output type",
-                                        style: const TextStyle(
-                                            color: Colors.white60,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Wrap(
-                                        spacing: 3,
-                                        runSpacing: 3,
-                                        children: typeList,
-                                      ),
-                                    ],
-                                  ),
-                                  TextField(
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'output file name ',
-                                    ),
-                                    onChanged: (text) {
-                                      name = text;
-                                      setState(() => {});
-                                    },
-                                  ),
-                                  Container(
-                                      child: typemap['image'] == true
-                                          ? imageob
-                                          : txtob),
-                                  MaterialButton(
-                                      height: 50.0,
-                                      color: Colors.blue,
-                                      child: const Text("Convert",
-                                          style: TextStyle(
-                                              color: Colors.white70,
-                                              fontWeight: FontWeight.bold)),
-                                      onPressed: () {
-                                        converthash();
-                                      }),
-                                ],
-                              )
-                            : //
-                            mesgimg,
-                      ),
-                    ],
-                  )
-                : //
-                SizedBox(
-                    height: MediaQuery.of(context).size.height,
-                    child: Center(
-                        child: SizedBox(
-                            height: 50,
-                            child: Column(
-                              children: const [
-                                CircularProgressIndicator(),
-                              ],
-                            ))),
-                  )),
-      ],
+      ),
+    );
+    var convert = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+          primary: Colors.black.withOpacity(0.6),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
+          padding: const EdgeInsets.all(0.0)),
+      onPressed: () {
+        converthash();
+      },
+      child: Ink(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20.0)),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 200.0, minHeight: 50.0),
+          alignment: Alignment.center,
+          child: const Text(
+            "Convert",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
     );
 
     return Scaffold(
@@ -933,7 +915,102 @@ Enter the number of columns or the number of charctars per
                                     height:
                                         MediaQuery.of(context).size.height - 90,
                                     child: done == false ? home : mesgtxt)
-                                : stack,
+                                : Stack(
+                                    alignment:
+                                        AlignmentDirectional.bottomCenter,
+                                    children: [
+                                      Container(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                      ),
+                                      Container(
+                                          child: prograss == false
+                                              ? Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Image.memory(
+                                                      imagebytes!,
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width,
+                                                      alignment:
+                                                          Alignment.center,
+                                                    ),
+                                                    Container(
+                                                      child: done == false
+                                                          ? Column(
+                                                              children: [
+                                                                change,
+                                                                Column(
+                                                                  children: [
+                                                                    // ignore: prefer_const_constructors
+                                                                    Text(
+                                                                      "output type",
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .white60,
+                                                                          fontSize:
+                                                                              16,
+                                                                          fontWeight:
+                                                                              FontWeight.bold),
+                                                                    ),
+                                                                    Wrap(
+                                                                      spacing:
+                                                                          3,
+                                                                      runSpacing:
+                                                                          3,
+                                                                      children:
+                                                                          typeList,
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                TextField(
+                                                                  decoration:
+                                                                      const InputDecoration(
+                                                                    border:
+                                                                        OutlineInputBorder(),
+                                                                    hintText:
+                                                                        'output file name ',
+                                                                  ),
+                                                                  onChanged:
+                                                                      (text) {
+                                                                    name = text;
+                                                                    setState(
+                                                                        () =>
+                                                                            {});
+                                                                  },
+                                                                ),
+                                                                Container(
+                                                                    child: typemap['image'] ==
+                                                                            true
+                                                                        ? imageob
+                                                                        : txtob),
+                                                                convert
+                                                              ],
+                                                            )
+                                                          : //
+                                                          mesgimg,
+                                                    ),
+                                                  ],
+                                                )
+                                              : //
+                                              SizedBox(
+                                                  height: MediaQuery.of(context)
+                                                      .size
+                                                      .height,
+                                                  child: Center(
+                                                      child: SizedBox(
+                                                          height: 50,
+                                                          child: Column(
+                                                            children: const [
+                                                              CircularProgressIndicator(),
+                                                            ],
+                                                          ))),
+                                                )),
+                                    ],
+                                  ),
                           ),
                         ),
                       )),
