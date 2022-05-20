@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 //import 'package:multi_select_flutter/multi_select_flutter.dart';
 //import 'package:flutter/services.dart';
+// ignore: unnecessary_import
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
 // import 'package:shared_preferences/shared_preferences.dart';
@@ -31,25 +32,25 @@ class Imgfilterobj {
   final String gscale3 = "BWMoahkbdpqwmZOQLCJUYXzcvunxrjftilI ";
 
   final List<int> rainbow = [
-    0Xffd30094,
-    0Xff82004b,
-    0Xffff0000,
-    0Xff00ff00,
-    0Xff00ffff,
-    0Xff007fff,
-    0Xff0000ff
+    0X00d30094,
+    0X0082004b,
+    0X00ff0000,
+    0X0000ff00,
+    0X0000ffff,
+    0X00007fff,
+    0X000000ff
   ];
 
   final Map<String, int> singlecolormap = {
-    'Violet symbols': 0Xffd30094,
-    'Indigo symbols': 0Xff82004b,
-    'Blue symbols': 0Xffff0000,
-    'Green symbols': 0Xff00ff00,
-    'Yellow symbols': 0Xff00ffff,
-    'Orange symbols': 0Xff007fff,
-    'Red symbols': 0Xff0000ff,
-    'Grey scale': 0Xff000000,
-    'terminal green text': 0Xff26F64A
+    'Violet symbols': 0X00d30094,
+    'Indigo symbols': 0X0082004b,
+    'Blue symbols': 0X00ff0000,
+    'Green symbols': 0X0000ff00,
+    'Yellow symbols': 0X0000ffff,
+    'Orange symbols': 0X00007fff,
+    'Red symbols': 0X000000ff,
+    'Grey scale': 0X00000000,
+    'terminal green text': 0X0026F64A
   };
 
   Uint8List? bytes;
@@ -249,15 +250,16 @@ Uint8List photohash(Imgfilterobj imgfobj) {
           int red = photodata[i * width + j] & 0xff;
           int green = (photodata[i * width + j] >> 8) & 0xff;
           int blue = (photodata[i * width + j] >> 16) & 0xff;
-          int alpha = (photodata[i * width + j] >> 24) & 0xff;
 
           //cal avg
-          double avg = (blue + red + green + alpha) / 4;
+          double avg = (blue + red + green) / 3;
 
           var k = gscale[((avg * gscalelen) / 255).round()];
 
+          int alpha = (((photodata[i * width + j] >> 24) & 0xff) << 24);
+
           img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
-              color: imgfobj.rainbow[(i * width + j) % 7]);
+              color: (imgfobj.rainbow[(i * width + j) % 7] ^ alpha));
         }
       }
     } else {
@@ -272,15 +274,15 @@ Uint8List photohash(Imgfilterobj imgfobj) {
           int red = photodata[i * width + j] & 0xff;
           int green = (photodata[i * width + j] >> 8) & 0xff;
           int blue = (photodata[i * width + j] >> 16) & 0xff;
-          int alpha = (photodata[i * width + j] >> 24) & 0xff;
 
           //cal avg
-          double avg = (blue + red + green + alpha) / 4;
+          double avg = (blue + red + green) / 3;
 
           var k = gscale[((avg * gscalelen) / 255).round()];
+          int alpha = (((photodata[i * width + j] >> 24) & 0xff) << 24);
 
           img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
-              color: rainbow0[((avg * 6) / 255).round()]);
+              color: (rainbow0[((avg * 6) / 255).round()]) ^ alpha);
         }
       }
     }
@@ -302,15 +304,16 @@ Uint8List photohash(Imgfilterobj imgfobj) {
           int red = photodata[i * width + j] & 0xff;
           int green = (photodata[i * width + j] >> 8) & 0xff;
           int blue = (photodata[i * width + j] >> 16) & 0xff;
-          int alpha = (photodata[i * width + j] >> 24) & 0xff;
 
           //cal avg
-          double avg = (blue + red + green + alpha) / 4;
+          double avg = (blue + red + green) / 3;
 
           var k = gscale[((avg * gscalelen) / 255).round()];
 
+          int alpha = (((photodata[i * width + j] >> 24) & 0xff) << 24);
+
           img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
-              color: printcolor!);
+              color: (printcolor! ^ alpha));
         }
       }
     }
@@ -423,7 +426,9 @@ class _MyHomePageState extends State<MyHomePage> {
       if (image == null) return;
       setState(() => this.image = image);
     } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
+      if (kDebugMode) {
+        print('Failed to pick image: $e');
+      }
     }
     imagebytes = await image!.readAsBytes();
     setState(() => {});
@@ -431,6 +436,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future converthash() async {
     if (typemap['image'] == true) {
+      // ignore: unused_local_variable
       var imgfobj = Imgfilterobj(imagebytes!, _valuecom, _valueblur, filtersmap,
           brcmap, fontmap, symbolsmap);
 
@@ -441,6 +447,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       if (!kIsWeb) {
         Directory appDocDir = await getApplicationDocumentsDirectory();
+        // ignore: unused_local_variable
         String appDocPath = appDocDir.path;
         File f = File('$appDocDir/$name.png');
         await f.writeAsBytes(imagebytes!);
@@ -462,6 +469,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       if (!kIsWeb) {
         Directory appDocDir = await getApplicationDocumentsDirectory();
+        // ignore: unused_local_variable
         String appDocPath = appDocDir.path;
 
         File f = File('$appDocDir/$name.txt');
@@ -571,32 +579,36 @@ class _MyHomePageState extends State<MyHomePage> {
             ))
         .toList();
 
-    TextStyle defaultStyle = const TextStyle(color: Colors.grey, fontSize: 20.0);
+    TextStyle defaultStyle =
+        const TextStyle(color: Colors.grey, fontSize: 16.0);
     TextStyle linkStyle = const TextStyle(color: Colors.blue);
 
-    var links1 = RichText(
-      text: TextSpan(
-        style: defaultStyle,
-        children: <TextSpan>[
-          const TextSpan(text: 'By clicking Sign Up, you agree to our '),
-          TextSpan(
-              text: 'Terms of Service',
-              style: linkStyle,
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  _launchUrl();
-                }),
-          const TextSpan(text: ' and that you have read our '),
-          TextSpan(
-              text: 'Privacy Policy',
-              style: linkStyle,
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  _launchUrl();
-                }),
-        ],
-      ),
-    );
+    var links1 = Container(
+        margin: const EdgeInsets.all(5.0),
+        padding: const EdgeInsets.all(40.0),
+        child: RichText(
+          text: TextSpan(
+            style: defaultStyle,
+            children: <TextSpan>[
+              const TextSpan(text: 'Spoort the app by donating '),
+              TextSpan(
+                  text: 'here',
+                  style: linkStyle,
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      _launchUrl();
+                    }),
+              const TextSpan(text: ' our ny checking out our Asciiart based  '),
+              TextSpan(
+                  text: 'NFT collction',
+                  style: linkStyle,
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      _launchUrl();
+                    }),
+            ],
+          ),
+        ));
 
     var imageob = Column(
       children: [
@@ -711,26 +723,31 @@ Enter the number of columns or the number of charctars per
             children: [
           Container(
             height: 50,
+            margin: const EdgeInsets.all(5.0),
+            padding: const EdgeInsets.all(1.0),
             decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(25)),
-                color: Colors.black.withOpacity(0.7)),
+                color: Colors.black.withOpacity(0.6)),
             child: Center(
-                child: Text(
-                    'your text was ${lent} +++_______+++  ${lenc} saved as ${name}.txt',
+                child: Text('your text was  saved as $name.txt',
                     style: const TextStyle(
                         color: Colors.white70, fontWeight: FontWeight.bold))),
           ),
-          MaterialButton(
-              height: 50.0,
-              color: Colors.green.withOpacity(0.6),
-              child: const Text("Go Back",
-                  style: TextStyle(
-                      color: Colors.white70, fontWeight: FontWeight.bold)),
-              onPressed: () {
-                done = false;
-                setState(() => {});
-              }),
-          links1
+          links1,
+          Material(
+            color: Colors.black.withOpacity(0.6),
+            borderRadius: BorderRadius.circular(30.0),
+            child: MaterialButton(
+                height: 50.0,
+                color: Colors.grey.withOpacity(0.6),
+                child: const Text("Go Back",
+                    style: TextStyle(
+                        color: Colors.black54, fontWeight: FontWeight.bold)),
+                onPressed: () {
+                  done = false;
+                  setState(() => {});
+                }),
+          )
         ]));
     var mesgimg = Center(
         child: Column(
@@ -739,14 +756,17 @@ Enter the number of columns or the number of charctars per
             children: [
           Container(
             height: 50,
+            margin: const EdgeInsets.all(5.0),
+            padding: const EdgeInsets.all(1.0),
             decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(25)),
-                color: Colors.black.withOpacity(0.7)),
+                color: Colors.black.withOpacity(0.6)),
             child: Center(
-                child: Text('your imag was  saved as ${name}.png',
+                child: Text('your imag was  saved as $name.png',
                     style: const TextStyle(
                         color: Colors.white70, fontWeight: FontWeight.bold))),
           ),
+          links1,
           MaterialButton(
               height: 50.0,
               color: Colors.green.withOpacity(0.6),
@@ -755,9 +775,118 @@ Enter the number of columns or the number of charctars per
                       color: Colors.white70, fontWeight: FontWeight.bold)),
               onPressed: () {
                 done = false;
+                imagebytes = null;
                 setState(() => {});
               })
         ]));
+
+    var home = Column(children: [
+      const Text(
+          'fnjrfjrnnjcfnfncjrfncjrncrjncrfjcnrjcnrfcjrcrfjcnrjcncnrjcncnrjc'),
+      const Spacer(),
+      MaterialButton(
+          height: 30.0,
+          color: Colors.blue,
+          child: const Text("Pick Image from Gallery",
+              style: TextStyle(
+                  color: Colors.white70, fontWeight: FontWeight.bold)),
+          onPressed: () {
+            pickImage();
+          }),
+    ]);
+
+    var stack = Stack(
+      alignment: AlignmentDirectional.bottomCenter,
+      children: [
+        Container(
+          width: MediaQuery.of(context).size.width,
+        ),
+        Container(
+            child: prograss == false
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.memory(
+                        imagebytes!,
+                        width: MediaQuery.of(context).size.width,
+                        alignment: Alignment.center,
+                      ),
+                      Container(
+                        child: done == false
+                            ? Column(
+                                children: [
+                                  MaterialButton(
+                                      height: 30.0,
+                                      color: Colors.blue,
+                                      child: const Text("Chang Image ",
+                                          style: TextStyle(
+                                              color: Colors.white70,
+                                              fontWeight: FontWeight.bold)),
+                                      onPressed: () {
+                                        pickImage();
+                                      }),
+                                  Column(
+                                    children: [
+                                      // ignore: prefer_const_constructors
+                                      Text(
+                                        "output type",
+                                        style: const TextStyle(
+                                            color: Colors.white60,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Wrap(
+                                        spacing: 3,
+                                        runSpacing: 3,
+                                        children: typeList,
+                                      ),
+                                    ],
+                                  ),
+                                  TextField(
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      hintText: 'output file name ',
+                                    ),
+                                    onChanged: (text) {
+                                      name = text;
+                                      setState(() => {});
+                                    },
+                                  ),
+                                  Container(
+                                      child: typemap['image'] == true
+                                          ? imageob
+                                          : txtob),
+                                  MaterialButton(
+                                      height: 50.0,
+                                      color: Colors.blue,
+                                      child: const Text("Convert",
+                                          style: TextStyle(
+                                              color: Colors.white70,
+                                              fontWeight: FontWeight.bold)),
+                                      onPressed: () {
+                                        converthash();
+                                      }),
+                                ],
+                              )
+                            : //
+                            mesgimg,
+                      ),
+                    ],
+                  )
+                : //
+                SizedBox(
+                    height: MediaQuery.of(context).size.height,
+                    child: Center(
+                        child: SizedBox(
+                            height: 50,
+                            child: Column(
+                              children: const [
+                                CircularProgressIndicator(),
+                              ],
+                            ))),
+                  )),
+      ],
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xffdbe9f4),
@@ -801,141 +930,10 @@ Enter the number of columns or the number of charctars per
                           child: Expanded(
                             child: imagebytes == null
                                 ? SizedBox(
-                                    height: MediaQuery.of(context).size.height,
-                                    child: done == false
-                                        ? Center(
-                                            child: MaterialButton(
-                                                height: 30.0,
-                                                color: Colors.blue,
-                                                child: const Text(
-                                                    "Pick Image from Gallery",
-                                                    style: TextStyle(
-                                                        color: Colors.white70,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                onPressed: () {
-                                                  pickImage();
-                                                }),
-                                          )
-                                        : mesgtxt)
-                                : Stack(
-                                    alignment:
-                                        AlignmentDirectional.bottomCenter,
-                                    children: [
-                                      Container(
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                      ),
-                                      Container(
-                                          child: prograss == false
-                                              ? Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Image.memory(
-                                                      imagebytes!,
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                              .size
-                                                              .width,
-                                                      alignment:
-                                                          Alignment.center,
-                                                    ),
-                                                    Container(
-                                                      child: done == false
-                                                          ? Column(
-                                                              children: [
-                                                                MaterialButton(
-                                                                    height:
-                                                                        30.0,
-                                                                    color: Colors
-                                                                        .blue,
-                                                                    child: const Text(
-                                                                        "Chang Image ",
-                                                                        style: TextStyle(
-                                                                            color: Colors
-                                                                                .white70,
-                                                                            fontWeight: FontWeight
-                                                                                .bold)),
-                                                                    onPressed:
-                                                                        () {
-                                                                      pickImage();
-                                                                    }),
-                                                                Column(
-                                                                  children: [
-                                                                    // ignore: prefer_const_constructors
-                                                                    Text(
-                                                                      "output type",
-                                                                      style: const TextStyle(
-                                                                          color: Colors
-                                                                              .white60,
-                                                                          fontSize:
-                                                                              16,
-                                                                          fontWeight:
-                                                                              FontWeight.bold),
-                                                                    ),
-                                                                    Wrap(
-                                                                      spacing:
-                                                                          3,
-                                                                      runSpacing:
-                                                                          3,
-                                                                      children:
-                                                                          typeList,
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                TextField(
-                                                                  decoration:
-                                                                      const InputDecoration(
-                                                                    border:
-                                                                        OutlineInputBorder(),
-                                                                    hintText:
-                                                                        'output file name ',
-                                                                  ),
-                                                                  onChanged:
-                                                                      (text) {
-                                                                    name = text;
-                                                                    setState(
-                                                                        () =>
-                                                                            {});
-                                                                  },
-                                                                ),
-                                                                Container(
-                                                                    child: typemap['image'] ==
-                                                                            true
-                                                                        ? imageob
-                                                                        : txtob),
-                                                                MaterialButton(
-                                                                    height:
-                                                                        50.0,
-                                                                    color: Colors
-                                                                        .blue,
-                                                                    child: const Text(
-                                                                        "Convert",
-                                                                        style: TextStyle(
-                                                                            color: Colors
-                                                                                .white70,
-                                                                            fontWeight: FontWeight
-                                                                                .bold)),
-                                                                    onPressed:
-                                                                        () {
-                                                                      converthash();
-                                                                    }),
-                                                              ],
-                                                            )
-                                                          : //
-                                                          mesgimg,
-                                                    ),
-                                                  ],
-                                                )
-                                              : //
-                                              const SizedBox(
-                                                  height: 1000,
-                                                  child:
-                                                      CircularProgressIndicator(),
-                                                )),
-                                    ],
-                                  ),
+                                    height:
+                                        MediaQuery.of(context).size.height - 90,
+                                    child: done == false ? home : mesgtxt)
+                                : stack,
                           ),
                         ),
                       )),
