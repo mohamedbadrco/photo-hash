@@ -415,6 +415,8 @@ class _MyHomePageState extends State<MyHomePage> {
     'only letters': false
   };
 
+  // ignore: unused_field
+
   int lent = 0;
   int lenc = 0;
 
@@ -433,6 +435,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future converthash() async {
+    name = _controller.value.text;
     if (typemap['image'] == true) {
       // ignore: unused_local_variable
       var imgfobj = Imgfilterobj(imagebytes!, _valuecom, _valueblur, filtersmap,
@@ -490,6 +493,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _launchUrl() async {
     if (!await launchUrl(_url)) throw 'Could not launch $_url';
+  }
+
+  final _controller = TextEditingController();
+
+  String? get _errorText {
+    // at any time, we can get the text from _controller.value.text
+    final text = _controller.value.text;
+
+    // Note: you can do your own custom validation here
+    // Move this logic this outside the widget for more testable code
+    if (text.isEmpty) {
+      return 'Can\'t be empty';
+    }
+    if (text.length < 4) {
+      return 'Too short';
+    }
+    // return null if the text is valid
+    return null;
   }
 
   @override
@@ -890,6 +911,30 @@ Pick an image  choose output type image/text apply filters an then review the re
       ),
     );
 
+    var namefiled = ValueListenableBuilder(
+      // Note: pass _controller to the animation argument
+      valueListenable: _controller,
+      builder: (context, TextEditingValue value, __) {
+        // this entire widget tree will rebuild every time
+        // the controller value changes
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  labelText: 'Enter your name',
+                  errorText: _errorText,
+                ),
+                onChanged: (text) {
+                  setState(() => {});
+                }),
+          ],
+        );
+      },
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xffdbe9f4),
       body: SingleChildScrollView(
@@ -984,38 +1029,23 @@ Pick an image  choose output type image/text apply filters an then review the re
                                                                     ),
                                                                   ],
                                                                 ),
-                                                                Padding(
-                                                                  padding: const EdgeInsets
-                                                                          .symmetric(
-                                                                      horizontal:
-                                                                          8,
-                                                                      vertical:
-                                                                          16),
-                                                                  child:
-                                                                      TextField(
-                                                                    decoration:
-                                                                        const InputDecoration(
-                                                                      border:
-                                                                          OutlineInputBorder(),
-                                                                      hintText:
-                                                                          'output file name ',
-                                                                    ),
-                                                                    onChanged:
-                                                                        (text) {
-                                                                      setState(
-                                                                          () =>
-                                                                              {
-                                                                                name = text
-                                                                              });
-                                                                    },
-                                                                  ),
-                                                                ),
+                                                                namefiled,
                                                                 Container(
                                                                     child: typemap['image'] ==
                                                                             true
                                                                         ? imageob
                                                                         : txtob),
-                                                                convert
+                                                                Container(
+                                                                    child: _controller
+                                                                            .value
+                                                                            .text
+                                                                            .isNotEmpty
+                                                                        ? convert
+                                                                        : Text(
+                                                                            'please enter a name',
+                                                                            style:
+                                                                                defaultStyle,
+                                                                          ))
                                                               ],
                                                             )
                                                           : //
