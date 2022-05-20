@@ -8,12 +8,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
-//import 'package:multi_select_flutter/multi_select_flutter.dart';
-//import 'package:flutter/services.dart';
 // ignore: unnecessary_import
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
-// import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:path_provider/path_provider.dart';
 
 import 'package:image/image.dart' as img;
@@ -590,7 +588,7 @@ class _MyHomePageState extends State<MyHomePage> {
           text: TextSpan(
             style: defaultStyle,
             children: <TextSpan>[
-              const TextSpan(text: 'Spoort the app by donating '),
+              const TextSpan(text: 'Support the app by donating '),
               TextSpan(
                   text: 'here',
                   style: linkStyle,
@@ -598,9 +596,28 @@ class _MyHomePageState extends State<MyHomePage> {
                     ..onTap = () {
                       _launchUrl();
                     }),
-              const TextSpan(text: ' our ny checking out our Asciiart based  '),
+              const TextSpan(text: ' our by checking out our Asciiart based  '),
               TextSpan(
-                  text: 'NFT collction',
+                  text: 'NFT Collection',
+                  style: linkStyle,
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      _launchUrl();
+                    }),
+            ],
+          ),
+        ));
+
+    var links2 = Container(
+        margin: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(40.0),
+        child: RichText(
+          text: TextSpan(
+            style: const TextStyle(color: Colors.grey, fontSize: 12.0),
+            children: <TextSpan>[
+              const TextSpan(text: 'Made by '),
+              TextSpan(
+                  text: 'MB',
                   style: linkStyle,
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
@@ -787,8 +804,10 @@ Enter the number of columns or the number of charctars per
       Container(
         margin: const EdgeInsets.all(5.0),
         padding: const EdgeInsets.all(40.0),
-        child: const Text('''
-Pick an image  choose output type image/text apply filters an then review the resulets ''',
+        child: const Text(
+            ''' Photo Hash is an app for making ascii art form images 
+
+Pick an image  choose output type image/text apply filters an then review the results ''',
             style: TextStyle(color: Colors.grey, fontSize: 18.0)),
       ),
       const Spacer(),
@@ -816,12 +835,13 @@ Pick an image  choose output type image/text apply filters an then review the re
         ],
       ),
       const Spacer(),
-      links1
+      links1,
+      links2
     ]);
 
     var change = ElevatedButton(
       style: ElevatedButton.styleFrom(
-          primary: Colors.white.withOpacity(0.1),
+          primary: Colors.black.withOpacity(0.6),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
           padding: const EdgeInsets.all(0.0)),
@@ -915,9 +935,7 @@ Pick an image  choose output type image/text apply filters an then review the re
                                     height:
                                         MediaQuery.of(context).size.height - 90,
                                     child: done == false ? home : mesgtxt)
-                                : Stack(
-                                    alignment:
-                                        AlignmentDirectional.bottomCenter,
+                                : Column(
                                     children: [
                                       Container(
                                         width:
@@ -966,21 +984,31 @@ Pick an image  choose output type image/text apply filters an then review the re
                                                                     ),
                                                                   ],
                                                                 ),
-                                                                TextField(
-                                                                  decoration:
-                                                                      const InputDecoration(
-                                                                    border:
-                                                                        OutlineInputBorder(),
-                                                                    hintText:
-                                                                        'output file name ',
+                                                                Padding(
+                                                                  padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          16),
+                                                                  child:
+                                                                      TextField(
+                                                                    decoration:
+                                                                        const InputDecoration(
+                                                                      border:
+                                                                          OutlineInputBorder(),
+                                                                      hintText:
+                                                                          'output file name ',
+                                                                    ),
+                                                                    onChanged:
+                                                                        (text) {
+                                                                      setState(
+                                                                          () =>
+                                                                              {
+                                                                                name = text
+                                                                              });
+                                                                    },
                                                                   ),
-                                                                  onChanged:
-                                                                      (text) {
-                                                                    name = text;
-                                                                    setState(
-                                                                        () =>
-                                                                            {});
-                                                                  },
                                                                 ),
                                                                 Container(
                                                                     child: typemap['image'] ==
@@ -998,16 +1026,42 @@ Pick an image  choose output type image/text apply filters an then review the re
                                               : //
                                               SizedBox(
                                                   height: MediaQuery.of(context)
-                                                      .size
-                                                      .height,
+                                                          .size
+                                                          .height -
+                                                      90,
                                                   child: Center(
-                                                      child: SizedBox(
+                                                      child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Container(
+                                                          margin:
+                                                              const EdgeInsets
+                                                                  .all(50.0),
+                                                          child: const Center(
+                                                            child: Center(
+                                                              child: Text(
+                                                                  'this process might take up to several minutes',
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .grey,
+                                                                      fontSize:
+                                                                          18.0)),
+                                                            ),
+                                                          )),
+                                                      SizedBox(
                                                           height: 50,
                                                           child: Column(
                                                             children: const [
                                                               CircularProgressIndicator(),
                                                             ],
-                                                          ))),
+                                                          )),
+                                                    ],
+                                                  )),
                                                 )),
                                     ],
                                   ),
