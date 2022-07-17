@@ -1,3 +1,5 @@
+// ignore_for_file: no_leading_underscores_for_local_identifiers
+
 import 'dart:math';
 import 'dart:ui';
 
@@ -5,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
+// import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
@@ -17,6 +19,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:image/image.dart' as img;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -91,7 +94,7 @@ class Imgfilterobjtxt {
 }
 
 List<String> photohashtxt(Imgfilterobjtxt imgfobjtxt) {
-  List<String> res = [''];
+  List<String> res = [];
 
   img.Image? photo;
 
@@ -127,10 +130,10 @@ List<String> photohashtxt(Imgfilterobjtxt imgfobjtxt) {
       int red = photodata[i * width + j] & 0xff;
       int green = (photodata[i * width + j] >> 8) & 0xff;
       int blue = (photodata[i * width + j] >> 16) & 0xff;
-      int alpha = (photodata[i * width + j] >> 24) & 0xff;
+      // int alpha = (photodata[i * width + j] >> 24) & 0xff;
 
       //cal avg
-      double avg = (blue + red + green + alpha) / 4;
+      double avg = (blue + red + green) / 3;
 
       String k = gscale[((avg * gscalelen) / 255).round()];
       row = row + k;
@@ -217,14 +220,13 @@ Uint8List photohash(Imgfilterobj imgfobj) {
     for (int i = 0; i < height; i++) {
       for (int j = 0; j < width; j++) {
         //get pixle colors
-
         int red = photodata[i * width + j] & 0xff;
         int green = (photodata[i * width + j] >> 8) & 0xff;
         int blue = (photodata[i * width + j] >> 16) & 0xff;
-        int alpha = (photodata[i * width + j] >> 24) & 0xff;
+        // int alpha = (photodata[i * width + j] >> 24) & 0xff;
 
         //cal avg
-        double avg = (blue + red + green + alpha) / 4;
+        double avg = (blue + red + green) / 3;
 
         var k = gscale[((avg * gscalelen) / 255).round()];
 
@@ -255,10 +257,10 @@ Uint8List photohash(Imgfilterobj imgfobj) {
 
           var k = gscale[((avg * gscalelen) / 255).round()];
 
-          int alpha = (((photodata[i * width + j] >> 24) & 0xff) << 24);
+          int alpha = (((photodata[i * width + j] >> 24)) << 24);
 
           img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
-              color: (imgfobj.rainbow[(i * width + j) % 7] ^ alpha));
+              color: (imgfobj.rainbow[(i * width + j) % 7] | alpha));
         }
       }
     } else {
@@ -309,10 +311,195 @@ Uint8List photohash(Imgfilterobj imgfobj) {
 
           var k = gscale[((avg * gscalelen) / 255).round()];
 
+          int alpha = (((photodata[i * width + j] >> 24)) << 24);
+
+          img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
+              color: (printcolor! | alpha));
+        }
+      }
+    }
+
+    if (imgfobj.filters!['Rainbow Flag'] == true ||
+        imgfobj.filters!['Rainbow Flag Reversed'] == true) {
+      var rainbow0 = imgfobj.rainbow;
+
+      if (imgfobj.filters!['Rainbow Flag Reversed'] == true) {
+        rainbow0 = imgfobj.rainbow.reversed.toList();
+      }
+      for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+          //get pixle colors
+
+          int red = photodata[i * width + j] & 0xff;
+          int green = (photodata[i * width + j] >> 8) & 0xff;
+          int blue = (photodata[i * width + j] >> 16) & 0xff;
+
+          //cal avg
+          double avg = (blue + red + green) / 3;
+
+          var k = gscale[((avg * gscalelen) / 255).round()];
+
+          int alpha = (((photodata[i * width + j] >> 24)) << 24);
+
+          img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
+              color: (rainbow0[i ~/ (height / 7)] | alpha));
+        }
+      }
+    }
+
+    if (imgfobj.filters!['Rainbow Random'] == true) {
+      var rainbow0 = imgfobj.rainbow;
+
+      var g = Random(45);
+
+      for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+          //get pixle colors
+
+          int red = photodata[i * width + j] & 0xff;
+          int green = (photodata[i * width + j] >> 8) & 0xff;
+          int blue = (photodata[i * width + j] >> 16) & 0xff;
+
+          //cal avg
+          double avg = (blue + red + green) / 3;
+
+          var k = gscale[((avg * gscalelen) / 255).round()];
+
           int alpha = (((photodata[i * width + j] >> 24) & 0xff) << 24);
 
           img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
-              color: (printcolor! ^ alpha));
+              color: (rainbow0[g.nextInt(7)] ^ alpha));
+        }
+      }
+    }
+
+    if (imgfobj.filters!['Random colors'] == true) {
+      var g = Random(photodata[Random(56).nextInt(256)]);
+
+      for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+          //get pixle colors
+
+          int red = photodata[i * width + j] & 0xff;
+          int green = (photodata[i * width + j] >> 8) & 0xff;
+          int blue = (photodata[i * width + j] >> 16) & 0xff;
+
+          //cal avg
+          double avg = (blue + red + green) / 3;
+
+          var color = 0X00000000 |
+              g.nextInt(256) |
+              (g.nextInt(256)) << 8 |
+              (g.nextInt(256) << 16);
+
+          var k = gscale[((avg * gscalelen) / 255).round()];
+
+          int alpha = (((photodata[i * width + j] >> 24) & 0xff) << 24);
+
+          img.drawString(imageg, drawfonts, j * fontindex, i * fontindex, k,
+              color: (color ^ alpha));
+        }
+      }
+    }
+    if (imgfobj.filters!['cmatrix'] == true ||
+        imgfobj.filters!['cmatrix modren'] == true) {
+      var g = Random(56);
+
+      int index = g.nextInt(21) + 20;
+
+      bool visable = true;
+
+      var color = 0X0026F64A;
+
+      if (imgfobj.filters!['cmatrix modren'] == true) {
+        //#87FFC5
+        img.fill(imageg, 0xff242120);
+        color = 0X00C5FF87;
+      }
+
+      for (int i = 0; i < width; i++) {
+        for (int j = 0; j < height; j++) {
+          //get pixle colors
+
+          int red = photodata[j * width + i] & 0xff;
+          int green = (photodata[j * width + i] >> 8) & 0xff;
+          int blue = (photodata[j * width + i] >> 16) & 0xff;
+
+          //cal avg
+          double avg = (blue + red + green) / 3;
+
+          index = index - 1;
+
+          if (index == 0) {
+            if (visable == true) {
+              index = g.nextInt(21) + 2;
+              visable = false;
+            } else {
+              index = g.nextInt(21) + 20;
+              visable = true;
+            }
+          }
+
+          var k = gscale[((avg * gscalelen) / 255).round()];
+
+          int alpha = (((photodata[j * width + i] >> 24) & 0xff) << 24);
+
+          if (visable == true) {
+            if (index == 1) {
+              img.drawString(imageg, drawfonts, i * fontindex, j * fontindex, k,
+                  color: (0X00ffffff ^ alpha));
+            } else {
+              img.drawString(imageg, drawfonts, i * fontindex, j * fontindex, k,
+                  color: (color ^ alpha));
+            }
+          }
+        }
+      }
+    }
+
+    if (imgfobj.filters!['cmatrix full colors'] == true) {
+      var g = Random(56);
+
+      int index = g.nextInt(21) + 20;
+
+      bool visable = true;
+
+      for (int i = 0; i < width; i++) {
+        for (int j = 0; j < height; j++) {
+          //get pixle colors
+
+          int red = photodata[j * width + i] & 0xff;
+          int green = (photodata[j * width + i] >> 8) & 0xff;
+          int blue = (photodata[j * width + i] >> 16) & 0xff;
+
+          //cal avg
+          double avg = (blue + red + green) / 3;
+
+          index = index - 1;
+
+          if (index == 0) {
+            if (visable == true) {
+              index = g.nextInt(21) + 2;
+              visable = false;
+            } else {
+              index = g.nextInt(21) + 20;
+              visable = true;
+            }
+          }
+
+          var k = gscale[((avg * gscalelen) / 255).round()];
+
+          int alpha = (((photodata[j * width + i] >> 24) & 0xff) << 24);
+
+          if (visable == true) {
+            if (index == 1) {
+              img.drawString(imageg, drawfonts, i * fontindex, j * fontindex, k,
+                  color: (0X00ffffff ^ alpha));
+            } else {
+              img.drawString(imageg, drawfonts, i * fontindex, j * fontindex, k,
+                  color: (photodata[j * width + i]));
+            }
+          }
         }
       }
     }
@@ -345,7 +532,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  XFile? image;
+  // XFile? image;
 
   Uint8List? imagebytes;
 
@@ -379,8 +566,8 @@ class _MyHomePageState extends State<MyHomePage> {
   double _valueblur = 0.0;
 
   Map<String, bool> filtersmap = {
-    'Grey scale': true,
-    'Normal colors': false,
+    'Grey scale': false,
+    'Normal colors': true,
     'sepia': false,
     'terminal green text': false,
     'photo hash 1': false,
@@ -393,6 +580,13 @@ class _MyHomePageState extends State<MyHomePage> {
     'Yellow symbols': false,
     'Orange symbols': false,
     'Red symbols': false,
+    'Rainbow Flag': false,
+    'Rainbow Flag Reversed': false,
+    'Rainbow Random': false,
+    'Random colors': false,
+    'cmatrix': false,
+    'cmatrix full colors': false,
+    'cmatrix modren': false,
   };
 
   Map<String, bool> typemap = {
@@ -421,17 +615,38 @@ class _MyHomePageState extends State<MyHomePage> {
   int lent = 0;
   int lenc = 0;
 
+  FilePickerResult? image;
   Future pickImage() async {
-    try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (image == null) return;
-      setState(() => this.image = image);
-    } on PlatformException catch (e) {
-      if (kDebugMode) {
-        print('Failed to pick image: $e');
-      }
+    name = '';
+    _controller.clear();
+
+    // image = await FilePicker.platform.pickFiles(
+    //   type: FileType.custom,
+    //   allowedExtensions: ['jpg', 'pdf', 'doc'],
+    // );
+    image = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: [
+        'png',
+        'jpg',
+        'jpeg',
+        'webp',
+        'jpe',
+        'jif',
+        'jfif'
+      ], //here you can add any of extention what you need to pick
+    );
+    // image = FilePicker().pickFile("jpg");
+    if (image == null) return;
+    if (kDebugMode) {
+      print(image);
     }
-    imagebytes = await image!.readAsBytes();
+    // setState(() => this.image = image);
+    // name = image!.files.first.name;
+    //  _controller.value.text.= name;
+
+    imagebytes = await File(image!.files.first.path!).readAsBytes();
+    name = '';
     setState(() => {});
   }
 
@@ -451,7 +666,10 @@ class _MyHomePageState extends State<MyHomePage> {
         Directory appDocDir = await getApplicationDocumentsDirectory();
         // ignore: unused_local_variable
         String appDocPath = appDocDir.path;
-        File f = File('$appDocDir/$name.png');
+        final path = Directory('$appDocPath/AsciiArt');
+        path.create();
+        File f = File('${path.path}/$name.png');
+        // f.create;
         await f.writeAsBytes(imagebytes!);
       }
 
@@ -474,10 +692,12 @@ class _MyHomePageState extends State<MyHomePage> {
         // ignore: unused_local_variable
         String appDocPath = appDocDir.path;
 
-        File f = File('$appDocDir/$name.txt');
+        final path = Directory('$appDocPath/AsciiArt');
+        path.create();
+        File f = File('${path.path}/$name.txt');
 
         for (int i = 0; i < lentxt; i++) {
-          await f.writeAsString(text[i], mode: FileMode.append);
+          await f.writeAsString("${text[i]} \n ", mode: FileMode.append);
         }
       }
 
@@ -490,10 +710,24 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  final Uri _url = Uri.parse('https://flutter.dev');
+  final Uri _urlmb =
+      Uri.parse('https://www.linkedin.com/in/mohamed-ali-bb92b422b/');
 
-  void _launchUrl() async {
-    if (!await launchUrl(_url)) throw 'Could not launch $_url';
+  void _launchUrlmb() async {
+    if (!await launchUrl(_urlmb)) throw 'Could not launch $_urlmb';
+  }
+
+  final Uri _urlpp =
+      Uri.parse('https://paypal.me/photohash?country.x=VN&locale.x=en_US');
+
+  void _launchUrlpp() async {
+    if (!await launchUrl(_urlpp)) throw 'Could not launch $_urlpp';
+  }
+
+  final Uri _urlnft = Uri.parse('https://rarible.com/Photo_Hash/sale');
+
+  void _launchUrlnft() async {
+    if (!await launchUrl(_urlnft)) throw 'Could not launch $_urlnft';
   }
 
   final _controller = TextEditingController();
@@ -516,6 +750,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+  
+  
+  
+    TextStyle defaultStyle =
+        const TextStyle(color: Color(0xffE8EAED), fontSize: 16.0);
+    TextStyle linkStyle = const TextStyle(color: Color(0xff8AB4F8));
+	
     var typeList = typemap.keys
         .toList()
         .map<ChoiceChip>(
@@ -599,9 +840,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ))
         .toList();
 
-    TextStyle defaultStyle =
-        const TextStyle(color: Colors.grey, fontSize: 16.0);
-    TextStyle linkStyle = const TextStyle(color: Colors.blue);
 
     var links1 = Container(
         margin: const EdgeInsets.all(5.0),
@@ -616,7 +854,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: linkStyle,
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      _launchUrl();
+                      _launchUrlpp();
                     }),
               const TextSpan(text: ' our by checking out our Asciiart based  '),
               TextSpan(
@@ -624,7 +862,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: linkStyle,
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      _launchUrl();
+                      _launchUrlnft();
                     }),
             ],
           ),
@@ -642,7 +880,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: linkStyle,
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      _launchUrl();
+                      _launchUrlmb();
                     }),
             ],
           ),
@@ -762,6 +1000,7 @@ Enter the number of columns or the number of charctars per
       onPressed: () {
         done = false;
         imagebytes = null;
+        name = '';
         setState(() => {});
       },
       child: Ink(
@@ -826,17 +1065,15 @@ Enter the number of columns or the number of charctars per
         margin: const EdgeInsets.all(5.0),
         padding: const EdgeInsets.all(40.0),
         child: const Text(
-            ''' Photo Hash is an app for making ascii art form images 
-
-Pick an image  choose output type image/text apply filters an then review the results ''',
-            style: TextStyle(color: Colors.grey, fontSize: 18.0)),
+            '''Photo Hash is an app for making ascii art form images Pick an image  choose output type image/text apply filters an then review the results ''',
+            style: TextStyle(color: Color(0xffE8EAED), fontSize: 20.0)),
       ),
       const Spacer(),
       Column(
         children: [
           Container(
             margin: const EdgeInsets.all(15.0),
-            child: const Text('pick an image',
+            child: const Text('Pick an Image',
                 style: TextStyle(color: Colors.grey, fontSize: 18.0)),
           ),
           ElevatedButton(
@@ -936,7 +1173,7 @@ Pick an image  choose output type image/text apply filters an then review the re
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xffADD8E6),
+      backgroundColor: const Color(0xffF8F9FA),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
@@ -947,14 +1184,14 @@ Pick an image  choose output type image/text apply filters an then review the re
                   width: double.infinity,
                   decoration: const BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(5)),
-                      color: Color(0xff708090)),
+                      color: Color(0xffE8EAED)),
                   height: 70.0,
                   child: Row(
                     children: const [
                       Text(
                         "#PHOTO HASH",
                         style: TextStyle(
-                            color: Colors.white,
+                            color: Color(0xff8AB4F8),
                             fontSize: 26,
                             letterSpacing: 2,
                             fontWeight: FontWeight.bold),
@@ -971,7 +1208,7 @@ Pick an image  choose output type image/text apply filters an then review the re
                         decoration: BoxDecoration(
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(25)),
-                            color: Colors.black.withOpacity(0.6)),
+                            color: const Color(0xff22273E).withOpacity(0.7)),
                         child: SizedBox(
                           width: double.infinity,
                           child: Expanded(
@@ -1075,7 +1312,7 @@ Pick an image  choose output type image/text apply filters an then review the re
                                                           child: const Center(
                                                             child: Center(
                                                               child: Text(
-                                                                  'this process might take up to several minutes',
+                                                                  'This may take a few minutes to complete',
                                                                   style: TextStyle(
                                                                       color: Colors
                                                                           .grey,
@@ -1107,3 +1344,4 @@ Pick an image  choose output type image/text apply filters an then review the re
     );
   }
 }
+//hello
